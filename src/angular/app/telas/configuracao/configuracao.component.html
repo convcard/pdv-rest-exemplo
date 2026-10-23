@@ -21,14 +21,17 @@
       <option [ngValue]="false">NÃO</option>
     </select>
 
-    <label>Certificado (.p12):</label>
+    <label>Certificado (.crt):</label>
     <span class="linha">
       <input readonly [value]="caminhoCertificado()" />
-      <button title="Selecionar certificado" (click)="selecionarCertificado()"><app-icone nome="pasta" />Selecionar</button>
+      <button title="Selecionar o certificado .crt" (click)="selecionarCertificado()"><app-icone nome="pasta" />Selecionar</button>
     </span>
 
-    <label>Senha do certificado:</label>
-    <input type="password" [(ngModel)]="senhaCertificado" />
+    <label>Chave privada (.key):</label>
+    <span class="linha">
+      <input readonly [value]="caminhoChave()" />
+      <button title="Selecionar a chave .key" (click)="selecionarChave()"><app-icone nome="pasta" />Selecionar</button>
+    </span>
 
     <label>Nome do software:</label>
     <input [(ngModel)]="nomeSoftware" />

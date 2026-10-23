@@ -72,14 +72,23 @@ async function emitirFatura(filtro: FiltroFatura): Promise<string> {
   return caminho;
 }
 
-async function selecionarCertificado(): Promise<string | undefined> {
+async function selecionarArquivo(titulo: string, nome: string, extensoes: string[]): Promise<string | undefined> {
   const resultado = await dialog.showOpenDialog({
-    title: 'Selecione o certificado Convcard',
-    filters: [{ name: 'Certificado PKCS#12', extensions: ['p12', 'pfx'] }],
+    title: titulo,
+    filters: [
+      { name: nome, extensions: extensoes },
+      { name: 'Todos os arquivos', extensions: ['*'] },
+    ],
     properties: ['openFile'],
   });
   return resultado.canceled ? undefined : resultado.filePaths[0];
 }
+
+const selecionarCertificado = () =>
+  selecionarArquivo('Selecione o certificado Convcard (.crt)', 'Certificado PEM', ['crt', 'pem', 'cer']);
+
+const selecionarChave = () =>
+  selecionarArquivo('Selecione a chave privada Convcard (.key)', 'Chave privada PEM', ['key', 'pem']);
 
 /**
  * Função do main que atende cada operação da ConvcardApi. O "satisfies"
@@ -90,6 +99,7 @@ const HANDLERS = {
   obterConfiguracao,
   salvarConfiguracao,
   selecionarCertificado,
+  selecionarChave,
   emitirFatura,
   obterUltimaTransacao: convcard.obterUltimaTransacao,
   validarConfiguracao: convcard.validarConfiguracao,

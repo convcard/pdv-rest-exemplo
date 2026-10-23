@@ -26,7 +26,10 @@ import { VendaCartaoComponent, type MeioPagamento } from '../telas/venda-cartao/
 interface ItemCatalogo {
   codigoBarras: number;
   descricao: string;
-  /** E=Ético (referência), G=Genérico, S=Similar, M=Manipulado, O=Outros */
+  /**
+   * Classificação do produto na API: E=Ético, G=Genérico, S=Similar,
+   * M=Manipulado (medicamentos) e O=Outros (qualquer outro item).
+   */
   tipo: TipoProduto;
   valorUnitario: number;
   percentualDesconto: number;
@@ -45,12 +48,12 @@ interface VendaFinalizada {
   meio: MeioPagamento;
 }
 
-/** Produtos fictícios só para montar a venda. */
+/** Produtos fictícios só para montar a venda (itens comuns: tipo "O" = Outros). */
 const CATALOGO: ItemCatalogo[] = [
-  { codigoBarras: 7896004703398, descricao: 'DIPIRONA 500MG 10 COMP', tipo: 'G', valorUnitario: 8.9, percentualDesconto: 0 },
-  { codigoBarras: 7891058017392, descricao: 'AMOXICILINA 500MG 21 CAPS', tipo: 'E', valorUnitario: 32.5, percentualDesconto: 10 },
-  { codigoBarras: 7896422506656, descricao: 'LOSARTANA 50MG 30 COMP', tipo: 'S', valorUnitario: 19.9, percentualDesconto: 5 },
-  { codigoBarras: 7891010032356, descricao: 'SABONETE LIQUIDO 250ML', tipo: 'O', valorUnitario: 4.99, percentualDesconto: 0 },
+  { codigoBarras: 7890000000011, descricao: 'CAFE TORRADO 250G', tipo: 'O', valorUnitario: 8.9, percentualDesconto: 0 },
+  { codigoBarras: 7890000000028, descricao: 'CAMISETA ALGODAO M', tipo: 'O', valorUnitario: 32.5, percentualDesconto: 10 },
+  { codigoBarras: 7890000000035, descricao: 'CANECA DE PORCELANA', tipo: 'O', valorUnitario: 19.9, percentualDesconto: 5 },
+  { codigoBarras: 7890000000042, descricao: 'CANETA ESFEROGRAFICA', tipo: 'O', valorUnitario: 4.99, percentualDesconto: 0 },
 ];
 
 /**

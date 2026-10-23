@@ -28,7 +28,8 @@ export class AppComponent {
     // Primeira execução: abre a configuração para informar certificado e token da loja
     const configuracao = inject(ConfiguracaoService);
     afterNextRender(() => {
-      if (!configuracao.valor.caminhoCertificado) void this.abrirConfiguracao();
+      const { caminhoCertificado, caminhoChave } = configuracao.valor;
+      if (!caminhoCertificado || !caminhoChave) void this.abrirConfiguracao();
     });
   }
 

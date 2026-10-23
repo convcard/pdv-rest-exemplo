@@ -47,7 +47,7 @@ sequenceDiagram
 
 ### Passo a passo
 
-1. Monte os dados da venda: valor total, parcelas, número da nota (se usado), produtos e, se houver, a receita.
+1. Monte os dados da venda: valor total, parcelas, número da nota (se usado), produtos e, se aplicável, a receita médica.
 2. Gere um **NST novo**.
 3. Envie `POST /compra/solicitacao`.
 4. Se aprovada, **grave a pendência** (NST, cartão, CVV, valor e `autorizacao` retornada) antes de seguir. Ela é o que permite confirmar ou desfazer, inclusive depois de uma queda do PDV.
@@ -110,22 +110,22 @@ sequenceDiagram
   "senha": "1234",
   "produtos": [
     {
-      "codigoBarras": 7896004703398,
-      "descricao": "DIPIRONA 500MG 10 COMP",
+      "codigoBarras": 7890000000011,
+      "descricao": "CAFE TORRADO 250G",
       "quantidade": 1,
       "valor": 8.9,
-      "tipo": "G",
+      "tipo": "O",
       "valorUnitario": 8.9,
       "percentualDesconto": 0,
       "valorDesconto": 0,
       "valorUnitarioLiquido": 8.9
     },
     {
-      "codigoBarras": 7891058017392,
-      "descricao": "AMOXICILINA 500MG 21 CAPS",
+      "codigoBarras": 7890000000028,
+      "descricao": "CAMISETA ALGODAO M",
       "quantidade": 1,
       "valor": 29.25,
-      "tipo": "E",
+      "tipo": "O",
       "valorUnitario": 32.5,
       "percentualDesconto": 10,
       "valorDesconto": 3.25,
@@ -229,8 +229,8 @@ Mesmo corpo (`MovimentoModel`) para confirmação e desfazimento:
 
 - `cartao` aceita o **número do cartão** ou um **token** ([doc 12](12-token.md)). Com token, CVV e senha não são necessários.
 - `qtdParcelas` ≥ 1 e `valor` ≥ 0,01.
-- `receita = true` torna obrigatórios `dataReceita` (date-time), `numeroCrm` e `ufMedico` (2 letras).
-- Em `produtos`, todos os campos do `ProdutoModel` são obrigatórios. `tipo`: `E` ético, `G` genérico, `S` similar, `M` manipulado, `O` outros.
+- Receita médica é **opcional** e só se aplica a quem vende com receita: `receita = true` torna obrigatórios `dataReceita` (date-time), `numeroCrm` e `ufMedico` (2 letras). Nas demais vendas, envie `receita = false` ou omita.
+- `produtos` é opcional; se enviado, todos os campos do `ProdutoModel` são obrigatórios. `tipo`: `E` ético, `G` genérico, `S` similar e `M` manipulado classificam medicamentos; para qualquer outro item use `O` (outros).
 
 ### Da tela do exemplo (boas práticas, não exigidas pela API)
 

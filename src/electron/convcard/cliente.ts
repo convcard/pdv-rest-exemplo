@@ -2,9 +2,9 @@
  * Cliente HTTP do Autorizador Convcard.
  *
  * Pontos importantes da comunicação:
- *  1. Autenticação por certificado de cliente (mTLS): a Convcard fornece um
- *     arquivo .p12 (PKCS#12) + senha. O certificado é
- *     enviado no handshake TLS; não existe header de token/Authorization.
+ *  1. Autenticação por certificado de cliente (mTLS): a Convcard fornece o
+ *     certificado (.crt) e a chave privada (.key), em formato PEM. Os dois são
+ *     usados no handshake TLS; não existe header de token/Authorization.
  *  2. Corpo sempre em JSON (Content-Type e Accept: application/json),
  *     inclusive nos métodos PUT e DELETE.
  *  3. Sucesso = HTTP 2xx. Alguns endpoints (confirmação/desfazimento) devolvem
@@ -93,21 +93,23 @@ function executar(
   corpo: unknown,
   binario: boolean,
 ): Promise<unknown> {
-  if (!config.caminhoCertificado) {
+  if (!config.caminhoCertificado || !config.caminhoChave) {
     return Promise.reject(
-      new ConvcardErro('Certificado Convcard não configurado.'),
+      new ConvcardErro('Certificado (.crt) e chave (.key) da Convcard não configurados.'),
     );
   }
 
-  let pfx: Buffer;
+  let cert: Buffer;
+  let key: Buffer;
   try {
-    pfx = fs.readFileSync(config.caminhoCertificado);
+    cert = fs.readFileSync(config.caminhoCertificado);
   } catch (e) {
-    return Promise.reject(
-      new ConvcardErro(
-        `Não foi possível ler o certificado: ${(e as Error).message}`,
-      ),
-    );
+    return Promise.reject(new ConvcardErro(`Não foi possível ler o certificado (.crt): ${(e as Error).message}`));
+  }
+  try {
+    key = fs.readFileSync(config.caminhoChave);
+  } catch (e) {
+    return Promise.reject(new ConvcardErro(`Não foi possível ler a chave (.key): ${(e as Error).message}`));
   }
 
   const url = URL_HOMOLOGACAO + caminho;
@@ -125,9 +127,9 @@ function executar(
       url,
       {
         method: metodo,
-        // Certificado do cliente (mTLS)
-        pfx,
-        passphrase: config.senhaCertificado,
+        // Certificado do cliente (mTLS): certificado (.crt) + chave privada (.key) em PEM
+        cert,
+        key,
         headers: {
           'Content-Type': 'application/json',
           Accept: binario ? 'application/pdf, application/json' : 'application/json',
@@ -191,15 +193,16 @@ function executar(
 
     req.end(json);
   }).catch((e: NodeJS.ErrnoException) => {
-    // Erros lançados de forma síncrona pelo https.request (ex.: senha do .p12
-    // errada) não passam pelo req.on('error'); traduzimos aqui também.
+    // Erros lançados de forma síncrona pelo https.request (ex.: chave que não
+    // corresponde ao certificado) não passam pelo req.on('error'); traduzimos
+    // aqui também.
     throw traduzirErroDeRede(e);
   });
 }
 
 /** Content-Disposition: attachment; filename="fatura-123.pdf" */
 function extrairNomeArquivo(disposition?: string): string {
-  const nome = disposition?.match(/filename*?=(?:UTF-8'')?"?([^";]+)"?/i)?.[1];
+  const nome = disposition?.match(/filename\*?=(?:UTF-8'')?"?([^";]+)"?/i)?.[1];
   return nome ? decodeURIComponent(nome) : `fatura-${Date.now()}.pdf`;
 }
 
@@ -243,8 +246,15 @@ function traduzirErroDeRede(e: NodeJS.ErrnoException): ConvcardErro {
       `Erro de conectividade: sem acesso à Convcard. Verifique a conexão de rede. (${e.code})`,
     );
   }
-  if (/mac verify|pkcs12|PKCS12/i.test(e.message)) {
-    return new ConvcardErro('Senha do certificado inválida ou arquivo .p12 corrompido.');
+  // Erros ao carregar o certificado/chave (mensagens do OpenSSL)
+  if (/key values mismatch/i.test(e.message)) {
+    return new ConvcardErro('A chave (.key) não corresponde ao certificado (.crt).');
+  }
+  if (/bad decrypt|interrupted or cancelled|bad password/i.test(e.message)) {
+    return new ConvcardErro('A chave (.key) está protegida por senha. Use a chave sem senha fornecida pela Convcard.');
+  }
+  if (/no start line|PEM routines|unsupported|ASN1|DECODER/i.test(e.message)) {
+    return new ConvcardErro('Certificado (.crt) ou chave (.key) inválidos. Use os arquivos PEM fornecidos pela Convcard.');
   }
   return new ConvcardErro(`Erro inesperado na integração com a Convcard: ${e.message}`);
 }

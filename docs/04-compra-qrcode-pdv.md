@@ -56,7 +56,7 @@ sequenceDiagram
 
 1. Gere um **NST novo** e chame `/qrcode-pdv/gerar` com `valor` e `qtdParcelas`.
 2. Exiba o QR Code (o conteúdo de `qrcode`) e, se quiser, uma contagem regressiva até `expiracao`.
-3. Aguarde `sleepMs` e chame `/qrcode-pdv/solicitacao-compra-qrcode` com o **mesmo NST**, os **mesmos** `valor` e `qtdParcelas`, os demais dados da compra (nota, receita, produtos) e o `qrcode`.
+3. Aguarde `sleepMs` e chame `/qrcode-pdv/solicitacao-compra-qrcode` com o **mesmo NST**, os **mesmos** `valor` e `qtdParcelas`, os demais dados da compra (nota, produtos e, se aplicável, receita) e o `qrcode`.
 4. Enquanto `pendente = true`: aguarde o `sleepMs` devolvido e chame de novo (mesmo NST e mesmos dados).
 5. Quando `pendente = false` e `retorno` vier preenchido: a compra foi aprovada. **Grave a pendência** (NST, `qrcode`, `valor`, `retorno.autorizacao`).
 6. Siga o mesmo pós-aprovação da compra por cartão: mensagem da loja, comprovante, cupom e confirmação ou desfazimento ([doc 03](03-compra-cartao.md)).
@@ -160,7 +160,7 @@ facilitar a leitura caso o cliente precise digitar.
   "valor": 19.9,
   "numeroNota": 124,
   "receita": false,
-  "produtos": [ { "codigoBarras": 7896422506656, "descricao": "LOSARTANA 50MG 30 COMP", "quantidade": 1, "valor": 18.9, "tipo": "S", "valorUnitario": 19.9, "percentualDesconto": 5, "valorDesconto": 1.0, "valorUnitarioLiquido": 18.9 } ],
+  "produtos": [ { "codigoBarras": 7890000000035, "descricao": "CANECA DE PORCELANA", "quantidade": 1, "valor": 18.9, "tipo": "O", "valorUnitario": 19.9, "percentualDesconto": 5, "valorDesconto": 1.0, "valorUnitarioLiquido": 18.9 } ],
   "qrcode": "ABCDEF"
 }
 ```

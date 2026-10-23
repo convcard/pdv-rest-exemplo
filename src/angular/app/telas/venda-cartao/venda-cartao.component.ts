@@ -9,7 +9,8 @@
  *  - CVV habilitado assim que o cartão tiver algum dígito;
  *  - Senha habilitada só para cartões de 19 dígitos cujo 7º dígito é "1";
  *  - QR Code só habilitado com o campo cartão vazio;
- *  - Campos de receita só aparecem com a configuração "Enviar dados receita".
+ *  - Campos de receita (opcionais na API, para vendas com receita médica) só
+ *    aparecem com a configuração "Enviar dados receita".
  *
  * Após a aprovação a compra fica PENDENTE; quem abriu a tela (PdvComponent)
  * imprime o comprovante e confirma ou desfaz (TransacaoService).

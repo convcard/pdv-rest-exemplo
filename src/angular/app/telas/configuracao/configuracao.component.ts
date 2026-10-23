@@ -5,10 +5,12 @@
  * src/electron/convcard/cliente.ts).
  *
  *  - Token da loja: enviado como identificadorLoja em toda requisição;
- *  - Enviar dados receita: exibe os campos de receita médica na venda;
+ *  - Enviar dados receita: exibe os campos de receita médica na venda
+ *    (opcional; só para estabelecimentos que vendem com receita);
  *  - Enviar número nota: envia o número do cupom/nota na venda;
- *  - Certificado .p12 + senha: autenticação com o autorizador (mTLS).
- * Certificado, senha e token da loja são fornecidos pela Convcard.
+ *  - Certificado (.crt, "BEGIN CERTIFICATE") + chave privada (.key,
+ *    "BEGIN RSA PRIVATE KEY", sem senha): autenticação com o autorizador (mTLS).
+ * Certificado, chave e token da loja são fornecidos pela Convcard.
  *
  * "Validar configuração [F3]" chama POST /validacao/validar-configuracao,
  * que confere certificado e token da loja.
@@ -43,7 +45,7 @@ export class ConfiguracaoComponent extends TelaBase {
   protected readonly usaReceita = signal(this.atual.usaReceita);
   protected readonly usaNumNota = signal(this.atual.usaNumNota);
   protected readonly caminhoCertificado = signal(this.atual.caminhoCertificado);
-  protected readonly senhaCertificado = signal(this.atual.senhaCertificado);
+  protected readonly caminhoChave = signal(this.atual.caminhoChave);
   protected readonly nomeSoftware = signal(this.atual.nomeSoftware);
   protected readonly versaoSoftware = signal(this.atual.versaoSoftware);
 
@@ -55,6 +57,11 @@ export class ConfiguracaoComponent extends TelaBase {
   protected async selecionarCertificado(): Promise<void> {
     const caminho = await this.api.selecionarCertificado();
     if (caminho) this.caminhoCertificado.set(caminho);
+  }
+
+  protected async selecionarChave(): Promise<void> {
+    const caminho = await this.api.selecionarChave();
+    if (caminho) this.caminhoChave.set(caminho);
   }
 
   protected async salvarEFechar(): Promise<void> {
@@ -79,13 +86,14 @@ export class ConfiguracaoComponent extends TelaBase {
       usaReceita: this.usaReceita(),
       usaNumNota: this.usaNumNota(),
       caminhoCertificado: this.caminhoCertificado(),
-      senhaCertificado: this.senhaCertificado(),
+      caminhoChave: this.caminhoChave(),
       nomeSoftware: this.nomeSoftware().trim(),
       versaoSoftware: this.versaoSoftware().trim(),
     };
     const validacao = new Validacao()
       .requerido('Token da loja', nova.identificadorLoja)
-      .requerido('Certificado', nova.caminhoCertificado)
+      .requerido('Certificado (.crt)', nova.caminhoCertificado)
+      .requerido('Chave privada (.key)', nova.caminhoChave)
       .requerido('Nome do software', nova.nomeSoftware)
       .requerido('Versão do software', nova.versaoSoftware);
     if (!(await this.dialogos.validar(validacao))) return false;

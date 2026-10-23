@@ -29,7 +29,7 @@ Na primeira execução abre a tela de configuração. Informe:
 | Token da loja                  | Token (UUID) fornecido pela Convcard, enviado como `identificadorLoja` |
 | Enviar dados receita           | Exibe os campos de receita médica na venda                             |
 | Enviar número nota             | Envia o número do cupom/nota na venda                                  |
-| Certificado (.p12) + senha     | Fornecidos pela Convcard para cada ambiente                            |
+| Certificado (.crt) + chave (.key) | Fornecidos pela Convcard (PEM; chave `BEGIN RSA PRIVATE KEY`, sem senha) |
 | Nome / versão do software      | Identificação do seu PDV                                               |
 
 Use **Validar configuração [F3]** para testar.
@@ -107,7 +107,7 @@ transação é confirmada) ou "Falha na impressão" (a transação é desfeita).
 
 ## Conceitos principais
 
-- **Autenticação:** certificado de cliente `.p12` no handshake TLS (mTLS) + token da loja no campo `identificadorLoja`.
+- **Autenticação:** certificado de cliente (`.crt` + `.key`, PEM) no handshake TLS (mTLS) + token da loja no campo `identificadorLoja`.
 - **Campos base:** toda requisição leva `nst`, `nomeSoftware`, `versaoSoftware` e `identificadorLoja`.
 - **NST:** sequencial gerado pelo PDV (1 a 9999999999). O mesmo NST é usado em
   todas as etapas de uma operação (solicitação → confirmação/desfazimento; gerar QR → pooling → confirmação).

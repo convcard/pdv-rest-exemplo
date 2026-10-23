@@ -14,8 +14,8 @@ npm run package    # gera o executável em out/
 ```
 
 Na primeira execução abre a tela de **Configurações**: informe o token da
-loja, o certificado `.p12` de homologação e a senha, e use **Validar
-configuração [F3]**.
+loja, o certificado (`.crt`) e a chave privada (`.key`) de homologação, e use
+**Validar configuração [F3]**.
 
 ## Tecnologias
 
@@ -27,7 +27,7 @@ configuração [F3]**.
 | Compilação do Angular no Vite | `@analogjs/vite-plugin-angular` |
 | Ícones | Lucide (empacotado no app) |
 | Banco local | SQLite via `node:sqlite` (embutido no Node do Electron) |
-| HTTP com certificado | `node:https` (`pfx` + `passphrase`) |
+| HTTP com certificado | `node:https` (`cert` + `key` em PEM) |
 
 ## Arquitetura
 
@@ -151,7 +151,7 @@ Arquivo `pdv-convcard.db` na pasta de dados do app (Windows:
 
 | Tabela | Conteúdo |
 | --- | --- |
-| `configuracao` | Token da loja, certificado, senha, flags de receita/nota, nome e versão do software |
+| `configuracao` | Token da loja, caminhos do `.crt` e da `.key`, flags de receita/nota, nome e versão do software |
 | `sequencia_nst` | Último NST (incremento atômico com `INSERT ... ON CONFLICT ... RETURNING`) |
 | `transacao_pendente` | Transação aprovada aguardando confirmação/desfazimento (no máximo uma) |
 | `ultima_transacao` | Último comprovante confirmado de cada tipo (reimpressão) |
@@ -160,9 +160,9 @@ Arquivo `pdv-convcard.db` na pasta de dados do app (Windows:
 
 | No exemplo | No seu PDV |
 | --- | --- |
-| Catálogo fixo de produtos (`CATALOGO` em `pdv/venda.component.ts`) | Seus produtos, com o tipo (E/G/S/M/O) e os descontos reais |
+| Catálogo fixo de produtos (`CATALOGO` em `pdv/venda.component.ts`) | Seus produtos, com os descontos reais e o tipo (`O` para itens comuns; E/G/S/M só para medicamentos) |
 | Impressora simulada (`dialogos/impressora.component.ts`) | Impressão real (ECF / não fiscal), com tratamento de falha |
 | Venda registrada só em memória | Gravação da venda, emissão fiscal, baixa de estoque, antes da confirmação |
 | Recebimento sem caixa | Abertura de caixa, lançamento do recebimento e das formas de pagamento antes da confirmação |
-| Senha do certificado em texto puro | Armazenamento seguro (cofre do sistema, `safeStorage`) |
+| `.key` em qualquer pasta escolhida pelo operador | `.key` em pasta com acesso restrito |
 | Somente homologação | Produção configurável depois da homologação aprovada |

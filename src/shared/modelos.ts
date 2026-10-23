@@ -27,7 +27,10 @@ export interface BaseModel {
   identificadorLoja: string;
 }
 
-/** Tipo do produto: E=Ético, G=Genérico, S=Similar, M=Manipulado, O=Outros */
+/**
+ * Tipo do produto: E=Ético, G=Genérico, S=Similar, M=Manipulado (classificação
+ * de medicamentos) e O=Outros. Para itens que não são medicamentos, use "O".
+ */
 export type TipoProduto = 'E' | 'G' | 'S' | 'M' | 'O';
 
 /** Item da venda. Enviado na compra para a Convcard aplicar regras por produto. */

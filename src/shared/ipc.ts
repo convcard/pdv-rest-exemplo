@@ -3,7 +3,7 @@
  * integração com a Convcard) e o "renderer" (as telas).
  *
  * Por que a integração fica no main e não na tela?
- *  - A comunicação com o autorizador usa certificado digital (.p12) e a senha
+ *  - A comunicação com o autorizador usa certificado digital (.crt + .key) e a chave
  *    dele. Isso não deve ficar exposto no renderer (que é uma página web).
  *  - O main tem acesso a disco (config, NST, transação pendente) e ao módulo
  *    https do Node, necessário para enviar o certificado do cliente (mTLS).
@@ -30,14 +30,15 @@ import type {
  * Configuração da integração, salva pelo main no banco SQLite (tabela configuracao).
  */
 export interface Configuracao {
-  /** Caminho do certificado .p12 fornecido pela Convcard */
+  /** Caminho do certificado (.crt, PEM) fornecido pela Convcard */
   caminhoCertificado: string;
-  senhaCertificado: string;
+  /** Caminho da chave privada (.key, PEM "BEGIN RSA PRIVATE KEY", sem senha) fornecida pela Convcard */
+  caminhoChave: string;
   /** Token da loja fornecido pela Convcard (enviado como identificadorLoja) */
   identificadorLoja: string;
   /** Exibido no rodapé das telas */
   nomeLoja: string;
-  /** Exibe os campos de receita médica na venda */
+  /** Exibe os campos de receita médica na venda (opcional; só para quem vende com receita) */
   usaReceita: boolean;
   /** Envia o número do cupom/nota na venda */
   usaNumNota: boolean;
@@ -139,7 +140,10 @@ export interface ConvcardApi {
   // Configuração / utilidades do PDV
   obterConfiguracao(): Promise<Configuracao>;
   salvarConfiguracao(config: Configuracao): Promise<void>;
+  /** Abre a janela de seleção do arquivo .crt */
   selecionarCertificado(): Promise<string | undefined>;
+  /** Abre a janela de seleção do arquivo .key */
+  selecionarChave(): Promise<string | undefined>;
   /** Baixa o PDF da fatura, salva em Downloads e abre. Devolve o caminho salvo. */
   emitirFatura(filtro: FiltroFatura): Promise<string>;
   obterUltimaTransacao(tipo: TipoReimpressao): Promise<UltimaTransacao | undefined>;
@@ -181,6 +185,7 @@ export const OPERACOES = [
   'obterConfiguracao',
   'salvarConfiguracao',
   'selecionarCertificado',
+  'selecionarChave',
   'emitirFatura',
   'obterUltimaTransacao',
   'validarConfiguracao',

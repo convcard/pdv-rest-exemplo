@@ -21,7 +21,7 @@ A autenticação usa duas credenciais fornecidas pela Convcard:
 
 | Credencial | Onde vai | Para quê |
 | --- | --- | --- |
-| **Certificado digital** (`.p12` / PKCS#12 + senha) | No handshake TLS (certificado de cliente, mTLS) | Identifica o integrador. Não existe header `Authorization` |
+| **Certificado digital**: certificado (`.crt`) + chave privada (`.key`, sem senha), em PEM | No handshake TLS (certificado de cliente, mTLS) | Identifica o integrador. Não existe header `Authorization` |
 | **Token da loja** | Campo `identificadorLoja` do corpo de toda requisição | Identifica a loja (UUID, ex.: `01c760b2-a9db-429c-ad60-d926f49878cd`) |
 
 Detalhes e exemplos de código em [02 - Configuração e validação](02-configuracao-e-validacao.md).

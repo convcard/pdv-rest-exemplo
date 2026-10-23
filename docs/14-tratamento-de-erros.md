@@ -65,8 +65,10 @@ respostas que não são JSON:
 
 | Erro (Node.js) | Causa | Mensagem sugerida |
 | --- | --- | --- |
-| Arquivo do certificado não encontrado | Caminho errado / arquivo removido | "Não foi possível ler o certificado: ..." |
-| `mac verify failure` / erro PKCS12 | Senha do `.p12` errada ou arquivo corrompido | "Senha do certificado inválida ou arquivo .p12 corrompido." |
+| Arquivo `.crt` ou `.key` não encontrado | Caminho errado / arquivo removido | "Não foi possível ler o certificado (.crt): ..." / "Não foi possível ler a chave (.key): ..." |
+| `key values mismatch` | A chave não é a do certificado | "A chave (.key) não corresponde ao certificado (.crt)." |
+| `bad decrypt` / `interrupted or cancelled` | Chave protegida por senha (arquivo diferente do entregue pela Convcard) | "A chave (.key) está protegida por senha. Use a chave sem senha fornecida pela Convcard." |
+| `no start line` / erro de decodificação PEM | Arquivo não é PEM válido | "Certificado (.crt) ou chave (.key) inválidos. Use os arquivos PEM fornecidos pela Convcard." |
 | `ENOTFOUND`, `ECONNREFUSED`, `ECONNRESET` | Sem internet, DNS, firewall/proxy | "Erro de conectividade: sem acesso à Convcard. Verifique a conexão de rede." |
 | Timeout | Sem resposta no tempo limite | "Tempo de resposta da Convcard esgotado." |
 

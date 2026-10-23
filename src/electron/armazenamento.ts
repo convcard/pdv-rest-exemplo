@@ -30,8 +30,8 @@ function db(): DatabaseSync {
         nome_loja           TEXT    NOT NULL,
         usa_receita         INTEGER NOT NULL,
         usa_num_nota        INTEGER NOT NULL,
-        caminho_certificado TEXT    NOT NULL,
-        senha_certificado   TEXT    NOT NULL,
+        caminho_certificado TEXT    NOT NULL, -- arquivo .crt
+        caminho_chave       TEXT    NOT NULL, -- arquivo .key
         nome_software       TEXT    NOT NULL,
         versao_software     TEXT    NOT NULL
       );
@@ -54,8 +54,28 @@ function db(): DatabaseSync {
         comprovante TEXT
       );
     `);
+    migrarConfiguracaoP12(banco);
   }
   return banco;
+}
+
+/**
+ * Bancos criados por versões anteriores do exemplo usavam certificado .p12
+ * (colunas caminho_certificado + senha_certificado). Ajusta para o par
+ * .crt + .key; o operador precisa selecionar os arquivos novos.
+ */
+function migrarConfiguracaoP12(db: DatabaseSync): void {
+  const colunas = (db.prepare('PRAGMA table_info(configuracao)').all() as { name: string }[]).map((c) => c.name);
+  if (!colunas.includes('caminho_chave')) {
+    db.exec(`
+      ALTER TABLE configuracao ADD COLUMN caminho_chave TEXT NOT NULL DEFAULT '';
+      UPDATE configuracao SET caminho_certificado = '';
+    `);
+  }
+  // Colunas de senha não são mais usadas (a chave .key não tem senha)
+  for (const coluna of ['senha_certificado', 'senha_chave']) {
+    if (colunas.includes(coluna)) db.exec(`ALTER TABLE configuracao DROP COLUMN ${coluna}`);
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -64,9 +84,9 @@ function db(): DatabaseSync {
 
 const CONFIG_PADRAO: Configuracao = {
   caminhoCertificado: '',
-  senhaCertificado: '',
+  caminhoChave: '',
   identificadorLoja: '',
-  nomeLoja: 'FARMÁCIA EXEMPLO',
+  nomeLoja: 'LOJA EXEMPLO',
   usaReceita: false,
   usaNumNota: false,
   nomeSoftware: 'PDV Convcard Exemplo',
@@ -79,13 +99,11 @@ interface LinhaConfiguracao {
   usa_receita: number;
   usa_num_nota: number;
   caminho_certificado: string;
-  senha_certificado: string;
+  caminho_chave: string;
   nome_software: string;
   versao_software: string;
 }
 
-// Atenção: a senha do certificado fica em texto puro por simplicidade.
-// Em produção, proteja-a (ex.: safeStorage do Electron ou cofre do sistema).
 export function obterConfiguracao(): Configuracao {
   const linha = db().prepare('SELECT * FROM configuracao WHERE id = 1').get() as LinhaConfiguracao | undefined;
   if (!linha) return { ...CONFIG_PADRAO };
@@ -95,7 +113,7 @@ export function obterConfiguracao(): Configuracao {
     usaReceita: linha.usa_receita === 1,
     usaNumNota: linha.usa_num_nota === 1,
     caminhoCertificado: linha.caminho_certificado,
-    senhaCertificado: linha.senha_certificado,
+    caminhoChave: linha.caminho_chave,
     nomeSoftware: linha.nome_software,
     versaoSoftware: linha.versao_software,
   };
@@ -106,7 +124,7 @@ export function salvarConfiguracao(config: Configuracao): void {
     .prepare(
       `INSERT OR REPLACE INTO configuracao
          (id, identificador_loja, nome_loja, usa_receita, usa_num_nota,
-          caminho_certificado, senha_certificado, nome_software, versao_software)
+          caminho_certificado, caminho_chave, nome_software, versao_software)
        VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?)`,
     )
     .run(
@@ -115,7 +133,7 @@ export function salvarConfiguracao(config: Configuracao): void {
       config.usaReceita ? 1 : 0,
       config.usaNumNota ? 1 : 0,
       config.caminhoCertificado,
-      config.senhaCertificado,
+      config.caminhoChave,
       config.nomeSoftware,
       config.versaoSoftware,
     );

@@ -7,7 +7,7 @@ use esta lista como preparação.
 ## Configuração
 
 - [ ] `POST /validacao/validar-configuracao` responde com sucesso e a `mensagem` é exibida.
-- [ ] Certificado inexistente, senha errada e certificado de outro ambiente geram mensagens claras.
+- [ ] `.crt`/`.key` inexistentes, chave que não corresponde ao certificado e certificado de outro ambiente geram mensagens claras.
 - [ ] Sem rede: mensagem de conectividade (sem travar o PDV).
 - [ ] `nomeSoftware` e `versaoSoftware` corretos em todas as requisições.
 
@@ -24,9 +24,9 @@ use esta lista como preparação.
 - [ ] Compra aprovada → falha na impressão → desfazimento.
 - [ ] Compra recusada → mensagem exibida, nada confirmado.
 - [ ] Compra parcelada (`qtdParcelas` > 1).
-- [ ] Compra com receita (`receita`, `dataReceita`, `numeroCrm`, `ufMedico`).
+- [ ] Compra com receita (`receita`, `dataReceita`, `numeroCrm`, `ufMedico`), se o estabelecimento vende com receita.
 - [ ] Compra com `numeroNota`.
-- [ ] Lista de produtos com tipos E/G/S/M/O e descontos.
+- [ ] Lista de produtos com o tipo correto (`O` para itens comuns) e descontos.
 - [ ] Retorno com `mensagemLoja` exibido ao operador.
 - [ ] Retorno com `atualizaEndereco = true`: atualização concluída e cancelada (deve desfazer).
 

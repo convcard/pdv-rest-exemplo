@@ -75,18 +75,17 @@ export class EnderecoComponent extends TelaBase<boolean> {
       cartao: this.dados.cartao,
       cep: this.cep(),
       endereco: this.logradouro().trim(),
-      complemento: this.complemento().trim(),
+      complemento: this.complemento().trim() || undefined,
       numero: this.numero().trim(),
       bairro: this.bairro().trim(),
       cidade: this.cidade().trim(),
       estado: this.estado(),
     };
 
-    // Todos os campos são obrigatórios
+    // Obrigatórios conforme a API (complemento é opcional)
     const validacao = new Validacao()
       .requerido('CEP', dados.cep)
       .requerido('Logradouro', dados.endereco)
-      .requerido('Complemento', dados.complemento)
       .requerido('Número', dados.numero)
       .requerido('Bairro', dados.bairro)
       .requerido('Cidade', dados.cidade)

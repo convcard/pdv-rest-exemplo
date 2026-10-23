@@ -8,6 +8,8 @@ O exemplo usa somente o **ambiente de homologação**
 (`https://aut-h.convcard.com.br/autorizador`, fixo em `src/electron/convcard/cliente.ts`).
 A credencial de produção é enviada pela Convcard após a homologação ser aprovada.
 
+**Documentação da integração (um arquivo por processo):** [`docs/`](docs/README.md)
+
 Documentação oficial da API (swagger):
 https://aut-h.convcard.com.br/autorizador/swagger-ui/index.html
 

@@ -112,7 +112,7 @@ export class QrCodeComponent extends TelaBase<ResultadoQrCode> {
 
       // 2. Pooling
       await aguardar(qr.sleepMs);
-      const resultado = await this.pooling(qr.nst, qr.qrcode);
+      const resultado = await this.pooling(qr.nst, qr.qrcode, expiracao);
       if (resultado) this.encerrar(resultado);
     } catch (e) {
       if (this.encerrada) return;
@@ -123,11 +123,13 @@ export class QrCodeComponent extends TelaBase<ResultadoQrCode> {
     }
   }
 
-  private async pooling(nst: number, qrcode: string): Promise<ResultadoQrCode | undefined> {
+  private async pooling(nst: number, qrcode: string, expiracao: number): Promise<ResultadoQrCode | undefined> {
     let resposta = await this.api.solicitarCompraQrCode(nst, qrcode, this.dados);
     while (!this.encerrada && resposta.pendente) {
       await aguardar(resposta.sleepMs);
       if (this.encerrada) break;
+      // O QR Code só vale até a expiração informada no /qrcode-pdv/gerar
+      if (Date.now() > expiracao) throw new ErroTela('QR Code expirado.');
       resposta = await this.api.solicitarCompraQrCode(nst, qrcode, this.dados);
     }
 

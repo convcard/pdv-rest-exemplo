@@ -7,7 +7,7 @@
     <input placeholder="01c760b2-a9db-429c-ad60-d926f49878cd" cdkFocusInitial [(ngModel)]="identificadorLoja" />
 
     <label>Nome da loja:</label>
-    <input [(ngModel)]="nomeLoja" />
+    <input maxlength="40" [(ngModel)]="nomeLoja" />
 
     <label>Enviar dados receita:</label>
     <select [(ngModel)]="usaReceita">
@@ -21,23 +21,29 @@
       <option [ngValue]="false">NÃO</option>
     </select>
 
+    <label>Enviar itens da venda:</label>
+    <select [(ngModel)]="enviaItens">
+      <option [ngValue]="true">SIM</option>
+      <option [ngValue]="false">NÃO</option>
+    </select>
+
     <label>Certificado (.crt):</label>
     <span class="linha">
-      <input readonly [value]="caminhoCertificado()" />
+      <input readonly tabindex="-1" placeholder="Nenhum arquivo selecionado" [value]="arquivoCertificado()" [title]="caminhoCertificado()" />
       <button title="Selecionar o certificado .crt" (click)="selecionarCertificado()"><app-icone nome="pasta" />Selecionar</button>
     </span>
 
     <label>Chave privada (.key):</label>
     <span class="linha">
-      <input readonly [value]="caminhoChave()" />
+      <input readonly tabindex="-1" placeholder="Nenhum arquivo selecionado" [value]="arquivoChave()" [title]="caminhoChave()" />
       <button title="Selecionar a chave .key" (click)="selecionarChave()"><app-icone nome="pasta" />Selecionar</button>
     </span>
 
     <label>Nome do software:</label>
-    <input [(ngModel)]="nomeSoftware" />
+    <input maxlength="40" [(ngModel)]="nomeSoftware" />
 
     <label>Versão do software:</label>
-    <input [(ngModel)]="versaoSoftware" />
+    <input maxlength="20" [(ngModel)]="versaoSoftware" />
   </div>
 
   <div class="botoes centro">

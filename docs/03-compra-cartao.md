@@ -238,6 +238,7 @@ Mesmo corpo (`MovimentoModel`) para confirmação e desfazimento:
 - Senha habilitada só para cartões de 19 dígitos cujo 7º dígito é `1`.
 - Campos de receita só aparecem com a configuração "Enviar dados receita".
 - `numeroNota` só é enviado com a configuração "Enviar número nota".
+- `produtos` só é enviado com a configuração "Enviar itens da venda" (padrão: SIM). Com NÃO, a compra vai só com valor e parcelas.
 - Data da receita: o exemplo envia o início do dia no fuso local em ISO 8601.
 
 ### Montagem dos produtos (como o exemplo calcula)

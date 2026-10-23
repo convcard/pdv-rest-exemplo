@@ -12,7 +12,7 @@
     </div>
   </div>
 
-  <div class="grade-campos" style="grid-template-columns: 117px 1fr 60px">
+  <div class="grade-campos" style="grid-template-columns: 140px 1fr 60px">
     <label>Número do cartão:</label>
     <input class="campo-grande" appMascara="cartao" autocomplete="off" cdkFocusInitial
       [(ngModel)]="cartao" [disabled]="processando()" (keydown.enter)="enviar()" />
@@ -26,7 +26,7 @@
   </div>
 
   @if (usaReceita) {
-    <div class="grade-campos" style="grid-template-columns: 117px 1fr 36px 90px">
+    <div class="grade-campos" style="grid-template-columns: 140px 1fr 36px 90px">
       <label class="checkbox">
         <input type="checkbox" [(ngModel)]="comReceita" [disabled]="processando()" />Com receita?
       </label>

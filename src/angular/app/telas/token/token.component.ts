@@ -24,7 +24,7 @@ import { Validacao, mensagemErro } from '../../core/util';
   templateUrl: './token.component.html',
 })
 export class TokenComponent extends TelaBase {
-  static readonly largura = '460px';
+  static readonly largura = '520px';
 
   private readonly api = inject(CONVCARD_API);
   private readonly dialogos = inject(DialogosService);

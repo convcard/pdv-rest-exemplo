@@ -4,7 +4,7 @@
     Favor confirmar os dados abaixo com o usuário do cartão
   </div>
 
-  <div class="grade-campos" style="grid-template-columns: 100px 1fr 82px 1fr">
+  <div class="grade-campos" style="grid-template-columns: 110px 1fr 70px 160px">
     <label>CEP:</label>
     <span class="linha">
       <input appMascara="cep" [(ngModel)]="cep" (keydown.enter)="buscarCep()" cdkFocusInitial />
@@ -25,7 +25,7 @@
 
     <label>Cidade:</label>
     <input appMascara="maiusculas" [tamanho]="25" [(ngModel)]="cidade" />
-    <label>Estado:</label>
+    <label>UF:</label>
     <select [(ngModel)]="estado">
       <option value=""></option>
       @for (uf of ufs; track uf) {

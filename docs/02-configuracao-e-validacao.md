@@ -22,6 +22,7 @@ o token da loja e testar a comunicação.
 | Nome e versão do software | `nomeSoftware` / `versaoSoftware` | `nomeSoftware` / `versaoSoftware` |
 | Enviar dados de receita | Se a tela de venda pede os dados da receita médica (opcional; só para quem vende com receita) | `usaReceita` |
 | Enviar número da nota | Se a compra leva `numeroNota` | `usaNumNota` |
+| Enviar itens da venda | Se a compra leva a lista `produtos` (opcional na API) | `enviaItens` |
 
 > **Segurança:** a chave privada (`.key`) não tem senha, então quem tiver o
 > arquivo consegue se autenticar como a sua integração. Guarde-a em local com

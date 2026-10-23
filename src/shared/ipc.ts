@@ -42,6 +42,8 @@ export interface Configuracao {
   usaReceita: boolean;
   /** Envia o número do cupom/nota na venda */
   usaNumNota: boolean;
+  /** Envia a lista de itens (campo "produtos", opcional na API) na compra */
+  enviaItens: boolean;
   nomeSoftware: string;
   versaoSoftware: string;
 }

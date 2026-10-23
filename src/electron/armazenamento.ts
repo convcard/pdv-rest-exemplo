@@ -30,6 +30,7 @@ function db(): DatabaseSync {
         nome_loja           TEXT    NOT NULL,
         usa_receita         INTEGER NOT NULL,
         usa_num_nota        INTEGER NOT NULL,
+        envia_itens         INTEGER NOT NULL DEFAULT 1,
         caminho_certificado TEXT    NOT NULL, -- arquivo .crt
         caminho_chave       TEXT    NOT NULL, -- arquivo .key
         nome_software       TEXT    NOT NULL,
@@ -54,18 +55,22 @@ function db(): DatabaseSync {
         comprovante TEXT
       );
     `);
-    migrarConfiguracaoP12(banco);
+    migrarConfiguracao(banco);
   }
   return banco;
 }
 
 /**
- * Bancos criados por versões anteriores do exemplo usavam certificado .p12
- * (colunas caminho_certificado + senha_certificado). Ajusta para o par
- * .crt + .key; o operador precisa selecionar os arquivos novos.
+ * Ajusta bancos criados por versões anteriores do exemplo:
+ *  - certificado .p12 (caminho_certificado + senha_certificado) -> par .crt +
+ *    .key; o operador precisa selecionar os arquivos novos;
+ *  - coluna envia_itens (padrão: enviar os itens).
  */
-function migrarConfiguracaoP12(db: DatabaseSync): void {
+function migrarConfiguracao(db: DatabaseSync): void {
   const colunas = (db.prepare('PRAGMA table_info(configuracao)').all() as { name: string }[]).map((c) => c.name);
+  if (!colunas.includes('envia_itens')) {
+    db.exec('ALTER TABLE configuracao ADD COLUMN envia_itens INTEGER NOT NULL DEFAULT 1');
+  }
   if (!colunas.includes('caminho_chave')) {
     db.exec(`
       ALTER TABLE configuracao ADD COLUMN caminho_chave TEXT NOT NULL DEFAULT '';
@@ -89,6 +94,7 @@ const CONFIG_PADRAO: Configuracao = {
   nomeLoja: 'LOJA EXEMPLO',
   usaReceita: false,
   usaNumNota: false,
+  enviaItens: true,
   nomeSoftware: 'PDV Convcard Exemplo',
   versaoSoftware: app.getVersion(),
 };
@@ -98,6 +104,7 @@ interface LinhaConfiguracao {
   nome_loja: string;
   usa_receita: number;
   usa_num_nota: number;
+  envia_itens: number;
   caminho_certificado: string;
   caminho_chave: string;
   nome_software: string;
@@ -112,6 +119,7 @@ export function obterConfiguracao(): Configuracao {
     nomeLoja: linha.nome_loja,
     usaReceita: linha.usa_receita === 1,
     usaNumNota: linha.usa_num_nota === 1,
+    enviaItens: linha.envia_itens === 1,
     caminhoCertificado: linha.caminho_certificado,
     caminhoChave: linha.caminho_chave,
     nomeSoftware: linha.nome_software,
@@ -123,15 +131,16 @@ export function salvarConfiguracao(config: Configuracao): void {
   db()
     .prepare(
       `INSERT OR REPLACE INTO configuracao
-         (id, identificador_loja, nome_loja, usa_receita, usa_num_nota,
+         (id, identificador_loja, nome_loja, usa_receita, usa_num_nota, envia_itens,
           caminho_certificado, caminho_chave, nome_software, versao_software)
-       VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     )
     .run(
       config.identificadorLoja,
       config.nomeLoja,
       config.usaReceita ? 1 : 0,
       config.usaNumNota ? 1 : 0,
+      config.enviaItens ? 1 : 0,
       config.caminhoCertificado,
       config.caminhoChave,
       config.nomeSoftware,

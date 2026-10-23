@@ -26,7 +26,7 @@ import { Validacao, mensagemErro } from '../../core/util';
   templateUrl: './cancelamento.component.html',
 })
 export class CancelamentoComponent extends TelaBase {
-  static readonly largura = '460px';
+  static readonly largura = '520px';
 
   private readonly api = inject(CONVCARD_API);
   private readonly dialogos = inject(DialogosService);

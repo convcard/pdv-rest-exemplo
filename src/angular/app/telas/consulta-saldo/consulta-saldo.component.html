@@ -12,11 +12,15 @@
 
   @let s = saldo();
   @let fatura = s?.fatura;
+  <div class="grade-campos" style="grid-template-columns: 150px 1fr">
+    <div class="secao">Dados do cartão</div>
+    <label>Usuário do cartão:</label><input readonly tabindex="-1" [value]="s?.usuario ?? ''" />
+    <label>Situação do cartão:</label><input readonly tabindex="-1" [value]="s?.situacao ?? ''" />
+  </div>
+
   <div class="consulta-colunas">
     <div class="grade-campos" style="grid-template-columns: 150px 1fr">
-      <div class="secao">Dados do cartão</div>
-      <label>Usuário do cartão:</label><input readonly tabindex="-1" [value]="s?.usuario ?? ''" />
-      <label>Situação do cartão:</label><input readonly tabindex="-1" [value]="s?.situacao ?? ''" />
+      <div class="secao">Saldo</div>
       <label>Limite de crédito total:</label><input class="num" readonly tabindex="-1" [value]="s?.limite | number: '1.2-2'" />
       <label>Saldo utilizado:</label><input class="num" readonly tabindex="-1" [value]="s?.compras | number: '1.2-2'" />
       <label>Saldo disponível:</label><input class="num" readonly tabindex="-1" [value]="s?.saldo | number: '1.2-2'" />

@@ -8,6 +8,8 @@
  *  - Enviar dados receita: exibe os campos de receita médica na venda
  *    (opcional; só para estabelecimentos que vendem com receita);
  *  - Enviar número nota: envia o número do cupom/nota na venda;
+ *  - Enviar itens da venda: envia a lista de produtos (campo "produtos",
+ *    opcional na API). Com NÃO, a compra vai só com valor e parcelas;
  *  - Certificado (.crt, "BEGIN CERTIFICATE") + chave privada (.key,
  *    "BEGIN RSA PRIVATE KEY", sem senha): autenticação com o autorizador (mTLS).
  * Certificado, chave e token da loja são fornecidos pela Convcard.
@@ -15,7 +17,7 @@
  * "Validar configuração [F3]" chama POST /validacao/validar-configuracao,
  * que confere certificado e token da loja.
  */
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import type { Configuracao } from '../../../../shared/ipc';
 import { IconeComponent } from '../../componentes/icone.component';
@@ -26,13 +28,17 @@ import { DialogosService } from '../../core/dialogos.service';
 import { TelaBase } from '../../core/tela-base';
 import { Validacao, mensagemErro } from '../../core/util';
 
+function nomeArquivo(caminho: string): string {
+  return caminho.split(/[\\/]/).pop() ?? '';
+}
+
 @Component({
   selector: 'app-configuracao',
   imports: [FormsModule, TelaTefComponent, IconeComponent],
   templateUrl: './configuracao.component.html',
 })
 export class ConfiguracaoComponent extends TelaBase {
-  static readonly largura = '580px';
+  static readonly largura = '780px';
 
   private readonly api = inject(CONVCARD_API);
   private readonly dialogos = inject(DialogosService);
@@ -44,8 +50,13 @@ export class ConfiguracaoComponent extends TelaBase {
   protected readonly nomeLoja = signal(this.atual.nomeLoja);
   protected readonly usaReceita = signal(this.atual.usaReceita);
   protected readonly usaNumNota = signal(this.atual.usaNumNota);
+  protected readonly enviaItens = signal(this.atual.enviaItens);
   protected readonly caminhoCertificado = signal(this.atual.caminhoCertificado);
   protected readonly caminhoChave = signal(this.atual.caminhoChave);
+
+  /** Os caminhos completos podem ser longos: a tela mostra o nome do arquivo e o caminho no tooltip */
+  protected readonly arquivoCertificado = computed(() => nomeArquivo(this.caminhoCertificado()));
+  protected readonly arquivoChave = computed(() => nomeArquivo(this.caminhoChave()));
   protected readonly nomeSoftware = signal(this.atual.nomeSoftware);
   protected readonly versaoSoftware = signal(this.atual.versaoSoftware);
 
@@ -85,6 +96,7 @@ export class ConfiguracaoComponent extends TelaBase {
       nomeLoja: this.nomeLoja().trim(),
       usaReceita: this.usaReceita(),
       usaNumNota: this.usaNumNota(),
+      enviaItens: this.enviaItens(),
       caminhoCertificado: this.caminhoCertificado(),
       caminhoChave: this.caminhoChave(),
       nomeSoftware: this.nomeSoftware().trim(),

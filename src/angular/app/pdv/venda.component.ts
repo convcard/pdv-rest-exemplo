@@ -125,7 +125,8 @@ export class VendaComponent {
       qtdParcelas: Math.max(1, this.parcelas() || 1),
       // Configuração "Enviar número nota": envia o número do cupom/nota da venda
       numeroNota: this.configuracao.valor.usaNumNota ? this.numeroCupom() : undefined,
-      produtos: this.produtos(),
+      // Configuração "Enviar itens da venda": a lista de produtos é opcional na API
+      produtos: this.configuracao.valor.enviaItens ? this.produtos() : undefined,
     };
 
     // 1. Solicitação (cartão ou QR Code)

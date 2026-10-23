@@ -29,6 +29,7 @@ Na primeira execução abre a tela de configuração. Informe:
 | Token da loja                  | Token (UUID) fornecido pela Convcard, enviado como `identificadorLoja` |
 | Enviar dados receita           | Exibe os campos de receita médica na venda                             |
 | Enviar número nota             | Envia o número do cupom/nota na venda                                  |
+| Enviar itens da venda          | Envia a lista de produtos na compra (opcional na API)                  |
 | Certificado (.crt) + chave (.key) | Fornecidos pela Convcard (PEM; chave `BEGIN RSA PRIVATE KEY`, sem senha) |
 | Nome / versão do software      | Identificação do seu PDV                                               |
 

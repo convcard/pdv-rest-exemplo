@@ -48,7 +48,7 @@ export type ResultadoVenda = { compra: CompraAprovada } | { erro: string };
   templateUrl: './venda-cartao.component.html',
 })
 export class VendaCartaoComponent extends TelaBase<ResultadoVenda> {
-  static readonly largura = '480px';
+  static readonly largura = '520px';
 
   private readonly api = inject(CONVCARD_API);
   private readonly dialogos = inject(DialogosService);

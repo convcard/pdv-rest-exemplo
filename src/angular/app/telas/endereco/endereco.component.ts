@@ -34,7 +34,7 @@ export interface DadosEnderecoTela {
   templateUrl: './endereco.component.html',
 })
 export class EnderecoComponent extends TelaBase<boolean> {
-  static readonly largura = '540px';
+  static readonly largura = '760px';
 
   private readonly api = inject(CONVCARD_API);
   private readonly dialogos = inject(DialogosService);

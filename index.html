@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; connect-src 'self' ws:"
+    />
+    <title>PDV Convcard - Exemplo</title>
+  </head>
+  <body>
+    <header class="topo">
+      <img src="imagens/convcard.png" alt="Convcard" />
+      <div>
+        <strong>PDV Convcard</strong>
+        <div class="subtitulo">Exemplo de integração com o Autorizador Convcard</div>
+      </div>
+      <div class="topo-acoes">
+        <button id="btn-funcoes" title="Clique para acessar as funções do Convcard">Funções Convcard [Ctrl+U]</button>
+        <button id="btn-configuracoes">Configurações</button>
+      </div>
+    </header>
+    <div id="faixa-homologacao" class="rodape-homologacao" hidden>AMBIENTE HOMOLOGAÇÃO</div>
+
+    <main class="conteudo">
+      <section class="venda">
+        <h2>Venda <small>Cupom nº <span id="venda-cupom"></span></small></h2>
+        <div class="catalogo" id="catalogo"></div>
+
+        <table class="grade">
+          <thead>
+            <tr>
+              <th>EAN</th>
+              <th>Descrição</th>
+              <th>Tipo</th>
+              <th class="num">Qtd</th>
+              <th class="num">Unitário</th>
+              <th class="num">Desc. %</th>
+              <th class="num">Total</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="itens-venda"></tbody>
+        </table>
+
+        <div class="rodape-venda">
+          <label>Parcelas <input id="venda-parcelas" type="number" min="1" value="1" /></label>
+          <div class="total">Total: <span id="venda-total"></span></div>
+          <button id="btn-finalizar" class="primario"><img src="imagens/Btn_Finalizar.gif" alt="" />Finalizar venda [F5]</button>
+        </div>
+
+        <h2>Vendas finalizadas</h2>
+        <p class="dica">Excluir uma venda cancela automaticamente a transação Convcard.</p>
+        <table class="grade">
+          <thead>
+            <tr>
+              <th>Cupom</th>
+              <th>Data</th>
+              <th>Pagamento</th>
+              <th class="num">Valor</th>
+              <th class="num">Autorização</th>
+              <th class="num">NSU</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="vendas-finalizadas"></tbody>
+        </table>
+      </section>
+
+      <!-- Painel com as requisições feitas ao autorizador (útil para quem está integrando) -->
+      <aside class="log">
+        <div class="log-topo">
+          <strong>Log da integração</strong>
+          <button id="btn-limpar-log">Limpar</button>
+        </div>
+        <div id="log-itens"></div>
+      </aside>
+    </main>
+
+    <script type="module" src="/src/renderer.ts"></script>
+  </body>
+</html>

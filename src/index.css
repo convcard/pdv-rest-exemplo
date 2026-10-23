@@ -1,0 +1,575 @@
+/*
+ * Visual de PDV desktop (fonte Tahoma, visor colorido, botões com ícone e
+ * atalho no texto).
+ */
+:root {
+  --azul: #1f5fa8;
+  --azul-esverdeado: #17808a;
+  --verde: #2e8b3d;
+  --vermelho: #c62828;
+  --cinza: #8b8b8b;
+  --borda: #b8c2cc;
+  --fundo: #eceff2;
+  font-family: Tahoma, 'Segoe UI', Arial, sans-serif;
+  font-size: 13px;
+  color: #1d2329;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--fundo);
+}
+
+button {
+  display: inline-flex;
+  white-space: nowrap;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border: 1px solid var(--borda);
+  border-radius: 3px;
+  background: linear-gradient(#fff, #e6eaee);
+  cursor: pointer;
+  font: inherit;
+}
+
+button:focus-visible {
+  outline: 2px solid var(--azul);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+button[hidden],
+[hidden] {
+  display: none !important;
+}
+
+button.primario {
+  background: var(--azul);
+  border-color: var(--azul);
+  color: #fff;
+}
+
+input,
+select,
+textarea {
+  padding: 4px 6px;
+  border: 1px solid var(--borda);
+  border-radius: 2px;
+  font: inherit;
+  background: #fff;
+}
+
+input:disabled,
+input[readonly],
+select:disabled {
+  background: #f1f3f5;
+}
+
+.num {
+  text-align: right;
+}
+
+/* ============================== Página principal ============================== */
+
+.topo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 16px;
+  background: #fff;
+  border-bottom: 1px solid var(--borda);
+}
+
+.topo img {
+  height: 40px;
+}
+
+.subtitulo {
+  color: var(--cinza);
+  font-size: 12px;
+}
+
+.topo-acoes {
+  margin-left: auto;
+  display: flex;
+  gap: 6px;
+}
+
+.conteudo {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 420px;
+  min-height: 0;
+}
+
+.venda {
+  overflow: auto;
+  padding: 12px 16px;
+}
+
+h2 {
+  margin: 8px 0;
+  color: var(--azul);
+}
+
+h2 small {
+  color: var(--cinza);
+  font-size: 13px;
+  font-weight: normal;
+}
+
+.dica {
+  color: #56616b;
+  font-size: 12px;
+  margin: 0 0 6px;
+}
+
+.catalogo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.grade {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+}
+
+.grade th,
+.grade td {
+  padding: 5px 8px;
+  border-bottom: 1px solid #dde3e8;
+  text-align: left;
+}
+
+.grade th {
+  background: #dfe7ef;
+}
+
+.grade .num {
+  text-align: right;
+}
+
+.grade.detalhe th {
+  width: 220px;
+}
+
+.rodape-venda {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 10px 0 16px;
+}
+
+.rodape-venda input {
+  width: 70px;
+}
+
+.total {
+  margin-left: auto;
+  font-size: 22px;
+  font-weight: bold;
+}
+
+/* Painel de log da integração */
+.log {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border-left: 1px solid var(--borda);
+  background: #fff;
+}
+
+.log-topo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--borda);
+}
+
+#log-itens {
+  flex: 1;
+  overflow: auto;
+  font-family: Consolas, monospace;
+  font-size: 12px;
+}
+
+#log-itens details {
+  padding: 4px 12px;
+  border-bottom: 1px solid #eef1f4;
+}
+
+#log-itens details.ok summary {
+  color: var(--verde);
+}
+
+#log-itens details.falha summary {
+  color: var(--vermelho);
+}
+
+#log-itens summary {
+  cursor: pointer;
+}
+
+#log-itens pre {
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+/* ================================ Telas (dialog) ================================ */
+
+.tela {
+  padding: 0;
+  border: 1px solid #7a8794;
+  border-radius: 4px;
+  background: #f5f6f7;
+  box-shadow: 0 8px 30px rgb(0 0 0 / 35%);
+  max-height: 95vh;
+  overflow-x: hidden;
+}
+
+.tela::backdrop {
+  background: rgb(0 0 0 / 30%);
+}
+
+.tela-titulo {
+  padding: 6px 10px;
+  background: linear-gradient(#3b6ea5, #2c5a8c);
+  color: #fff;
+  font-weight: bold;
+}
+
+.tela-logo {
+  text-align: center;
+  padding: 10px 0;
+}
+
+.tela-corpo {
+  padding: 0 10px 10px;
+}
+
+/* Rodapé das telas Convcard */
+.rodape-loja {
+  height: 15px;
+  padding: 0 5px;
+  color: var(--cinza);
+  font-size: 10px;
+  font-style: italic;
+}
+
+.rodape-homologacao {
+  padding: 3px;
+  background: red;
+  color: #fff;
+  font-weight: bold;
+  font-size: 16px;
+  text-align: center;
+}
+
+/* Faixa de título com borda cinza em cima e embaixo */
+.faixa-titulo {
+  margin: 0 -10px 8px;
+  padding: 8px 10px;
+  border-top: 1px solid #c0c0c0;
+  border-bottom: 1px solid #c0c0c0;
+  font-size: 15px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.faixa-titulo.esquerda {
+  text-align: left;
+}
+
+.valor-parcelas {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.valor-parcelas label {
+  font-size: 18px;
+}
+
+.valor-grande {
+  width: 100%;
+  font-size: 26px;
+  font-weight: bold;
+  text-align: right;
+}
+
+.grade-campos {
+  display: grid;
+  gap: 6px 8px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+/* Agrupa uma linha da grade para poder ocultá-la inteira */
+.linha-grade {
+  display: contents;
+}
+
+.grade-campos input:not([type='checkbox'], [type='radio']),
+.grade-campos select {
+  min-width: 0;
+  width: 100%;
+}
+
+.grade-campos > label,
+.linha-grade > label {
+  font-size: 14px;
+  text-align: right;
+}
+
+.grade-campos .span2 {
+  grid-column: span 2;
+}
+
+.grade-campos .span3 {
+  grid-column: span 3;
+}
+
+.grade-campos .secao,
+.secao {
+  grid-column: 1 / -1;
+  margin-top: 8px;
+  padding-bottom: 2px;
+  border-bottom: 1px solid var(--borda);
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.grade-campos label.checkbox,
+label.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-align: left;
+}
+
+.campo-grande {
+  width: 100%;
+  font-size: 18px;
+  text-align: right;
+}
+
+.campo-enorme {
+  flex: 1;
+  font-size: 30px;
+}
+
+.linha {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.linha input {
+  flex: 1;
+}
+
+button.icone {
+  padding: 2px 4px;
+}
+
+/* Visor de mensagens: azul = informação, verde = sucesso, vermelho = erro */
+.visor {
+  min-height: 45px;
+  margin: 6px 0;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 16px;
+  font-weight: bold;
+  text-align: center;
+  white-space: pre-wrap;
+}
+
+.visor.info {
+  background: var(--azul);
+}
+
+.visor.sucesso {
+  background: var(--verde);
+}
+
+.visor.erro {
+  background: var(--vermelho);
+}
+
+.visor.qrcode {
+  background: var(--azul-esverdeado);
+  font-size: 14px;
+}
+
+.botoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.botoes.centro {
+  justify-content: center;
+}
+
+.botoes.direita {
+  justify-content: flex-end;
+}
+
+/* Menu de funções */
+.menu {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+
+.menu button {
+  width: 100%;
+  height: 40px;
+  justify-content: flex-start;
+}
+
+.menu button img {
+  width: 24px;
+  height: 24px;
+}
+
+/* Mensagem Operador / Atenção / Confirmação */
+.mensagem-operador {
+  width: 100%;
+  height: 70px;
+  resize: none;
+  font-size: 14px;
+}
+
+.mensagem {
+  padding: 12px 4px;
+  white-space: pre-wrap;
+}
+
+.progresso {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 4px;
+}
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 3px solid #c8d3de;
+  border-top-color: var(--azul);
+  border-radius: 50%;
+  animation: girar 0.8s linear infinite;
+}
+
+@keyframes girar {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.comprovante {
+  max-height: 360px;
+  overflow: auto;
+  margin: 10px 0 0;
+  padding: 10px;
+  background: #fffef2;
+  border: 1px dashed var(--borda);
+  font-family: Consolas, monospace;
+  font-size: 12px;
+}
+
+/* QR Code */
+.qrcode-imagem {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+}
+
+.qrcode-imagem img {
+  max-width: 300px;
+  max-height: 300px;
+}
+
+.qrcode-codigo {
+  min-height: 30px;
+  text-align: center;
+  font-size: 18px;
+  font-weight: bold;
+  word-break: break-all;
+}
+
+/* Consulta saldo e recebimento */
+.cabecalho-consulta,
+.cabecalho-recebimento {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 0;
+}
+
+.cabecalho-consulta > div:first-child {
+  flex: 1;
+}
+
+.logo-lateral {
+  width: 180px;
+}
+
+.dica-enter {
+  font-size: 9px;
+  color: var(--cinza);
+  text-align: right;
+}
+
+.status-fatura {
+  color: var(--azul);
+  font-weight: bold;
+}
+
+.modos {
+  display: flex;
+  gap: 6px;
+}
+
+.modos button {
+  height: 50px;
+  border: 2px solid transparent;
+}
+
+.modos button.ativo {
+  border-color: var(--azul);
+}
+
+/* Reimpressão */
+.selecao {
+  margin: 0 10px;
+  font-size: 13px;
+}
+
+.selecao legend {
+  font-size: 11px;
+}

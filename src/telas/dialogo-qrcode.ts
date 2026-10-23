@@ -30,7 +30,7 @@ function formatarCodigo(qrcode: string): string {
 
 export function abrirQrCode(dados: DadosCompra): Promise<CompraQrCodeAprovada> {
   const tela = new Tela(
-    { titulo: 'TEF Convcard - QRCode', largura: 460, logo: false },
+    { titulo: 'TEF Convcard - QRCode', largura: 460 },
     `<div data-id="visor" class="visor qrcode">Gerando QRCode...</div>
      <div class="qrcode-imagem"><div data-id="carregando" class="qrcode-carregando">${icone('qrcode')}</div><img data-id="imagem" alt="QR Code" hidden /></div>
      <div data-id="codigo" class="qrcode-codigo"></div>

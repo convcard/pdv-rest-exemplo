@@ -35,7 +35,7 @@ export function abrirFuncoesConvcard(): void {
   ];
 
   const tela = new Tela(
-    { titulo: 'TEF Convcard - Funções administrativas', largura: 400 },
+    { titulo: 'TEF Convcard - Funções administrativas', largura: 460 },
     `<div class="menu">
        ${opcoes.map((o) => `<button data-id="${o.id}">${rotulo(o.icone, o.rotulo, o.tecla)}</button>`).join('')}
        <button data-id="sair">${rotulo('sair', 'Sair', 'Esc')}</button>

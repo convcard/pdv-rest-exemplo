@@ -2,7 +2,7 @@
  * Base de todas as telas "TEF Convcard".
  *
  * Cada tela é um <dialog> modal criado ao abrir e removido ao fechar, com:
- *  - cabeçalho com logo Convcard (opcional) e título;
+ *  - cabeçalho com o logo Convcard (ou só o símbolo, nos diálogos genéricos) e título;
  *  - rodapé padrão: nome da loja e o selo "Homologação";
  *  - atalhos de teclado (F2, F3, Esc...).
  */
@@ -13,6 +13,7 @@ export interface OpcoesTela {
   titulo: string;
   /** Largura em px */
   largura: number;
+  /** true (padrão) = logo completo; false = só o símbolo da marca */
   logo?: boolean;
   /** Rodapé com loja e ambiente (padrão true; os diálogos genéricos não têm) */
   rodape?: boolean;
@@ -33,7 +34,11 @@ function cabecalhoHtml(opcoes: OpcoesTela): string {
     ? opcoes.titulo.split(' - ', 2)
     : ['', opcoes.titulo];
   return `<header class="tela-cabecalho">
-      ${opcoes.logo === false ? '' : '<img class="tela-logo" src="imagens/convcard.png" alt="Convcard" />'}
+      ${
+        opcoes.logo === false
+          ? '<img class="tela-simbolo" src="imagens/convcard-icone.svg" alt="Convcard" />'
+          : '<img class="tela-logo" src="imagens/convcard-logo.svg" alt="Convcard" />'
+      }
       <div class="tela-titulos">
         ${sobretitulo ? `<small>${escapar(sobretitulo)}</small>` : ''}
         <h2>${escapar(titulo)}</h2>

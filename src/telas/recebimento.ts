@@ -45,7 +45,7 @@ export interface DadosFatura {
 /** Resolve com true se algum recebimento foi concluído. */
 export function abrirRecebimento(dadosFatura?: DadosFatura): Promise<boolean> {
   const tela = new Tela(
-    { titulo: 'TEF Convcard - Recebimento', largura: 585, logo: false },
+    { titulo: 'TEF Convcard - Recebimento', largura: 585 },
     `<div class="cabecalho-recebimento">
        <div class="modos">
          <button data-id="modo-recebimento" tabindex="-1">${rotulo('recebimento', 'Recebimento', 'F3')}</button>

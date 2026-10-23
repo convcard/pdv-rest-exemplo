@@ -1,15 +1,32 @@
 /* ============================================================================
- * Tema
+ * Tema (identidade visual Convcard)
+ *  - Azul-marinho  #002A53 (Pantone 2768 C)
+ *  - Azul          #336BC0 (Pantone 285 C)
+ *  - Gelo          #E1EBED (Pantone 649 C)
+ *  - Branco        #FFFFFF
+ *  - Degradê linear do azul-marinho para o azul
+ *  - Fonte: Funnel Display
  * ========================================================================== */
+@font-face {
+  font-family: 'Funnel Display';
+  src: url('/fontes/FunnelDisplay.ttf') format('truetype');
+  font-weight: 300 800;
+  font-display: swap;
+}
+
 :root {
-  --primaria: #1663c7;
-  --primaria-escura: #0f4fa3;
-  --primaria-suave: #e8f0fc;
-  --acento: #12808d;
-  --texto: #1f2937;
-  --texto-suave: #6b7280;
-  --borda: #e3e7ee;
-  --fundo: #f3f5f9;
+  --marinho: #002a53;
+  --azul: #336bc0;
+  --gelo: #e1ebed;
+  --degrade: linear-gradient(120deg, #002a53 0%, #336bc0 100%);
+  --primaria: var(--azul);
+  --primaria-escura: var(--marinho);
+  --primaria-suave: #e8eff9;
+  --acento: var(--azul);
+  --texto: #0f2238;
+  --texto-suave: #5d6b7a;
+  --borda: #d9e3e6;
+  --fundo: var(--gelo);
   --cartao: #ffffff;
   --sucesso: #15803d;
   --sucesso-suave: #e7f6ec;
@@ -20,7 +37,7 @@
   --raio: 10px;
   --sombra: 0 1px 2px rgb(16 24 40 / 6%), 0 1px 3px rgb(16 24 40 / 8%);
   --sombra-dialogo: 0 24px 48px rgb(16 24 40 / 22%);
-  font-family: 'Segoe UI Variable Text', 'Segoe UI', Inter, system-ui, sans-serif;
+  font-family: 'Funnel Display', 'Segoe UI', system-ui, sans-serif;
   font-size: 14px;
   color: var(--texto);
 }
@@ -195,29 +212,52 @@ input[type='radio'] {
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 10px 20px;
-  background: var(--cartao);
-  border-bottom: 1px solid var(--borda);
+  padding: 12px 20px;
+  background: var(--degrade);
+  color: #fff;
 }
 
 .marca {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
 }
 
 .marca img {
-  height: 36px;
+  height: 30px;
+}
+
+.marca-texto {
+  padding-left: 16px;
+  border-left: 1px solid rgb(255 255 255 / 30%);
 }
 
 .marca strong {
   display: block;
   font-size: 15px;
+  font-weight: 600;
 }
 
 .marca span {
-  color: var(--texto-suave);
+  color: rgb(255 255 255 / 75%);
   font-size: 12px;
+}
+
+/* Botões sobre o degradê do topo */
+.topo button {
+  background: rgb(255 255 255 / 12%);
+  border-color: rgb(255 255 255 / 25%);
+  color: #fff;
+}
+
+.topo button:hover:not(:disabled) {
+  background: rgb(255 255 255 / 22%);
+  border-color: rgb(255 255 255 / 40%);
+}
+
+.topo .selo-homologacao {
+  background: rgb(255 255 255 / 15%);
+  color: #ffd59a;
 }
 
 .selo-homologacao {
@@ -425,7 +465,7 @@ td.vazio {
   flex-direction: column;
   min-height: 0;
   border-radius: var(--raio);
-  background: #111827;
+  background: #0b1b2e;
   color: #e5e7eb;
   box-shadow: var(--sombra);
   overflow: hidden;
@@ -436,11 +476,11 @@ td.vazio {
   justify-content: space-between;
   align-items: center;
   padding: 12px 14px;
-  border-bottom: 1px solid #1f2937;
+  border-bottom: 1px solid #16304d;
 }
 
 .log-topo button {
-  background: #1f2937;
+  background: #16304d;
   border-color: #374151;
   color: #e5e7eb;
 }
@@ -463,7 +503,7 @@ td.vazio {
 }
 
 #log-itens details {
-  border-bottom: 1px solid #1f2937;
+  border-bottom: 1px solid #16304d;
 }
 
 #log-itens summary {
@@ -480,7 +520,7 @@ td.vazio {
 }
 
 #log-itens summary:hover {
-  background: #1a2332;
+  background: #12263f;
 }
 
 .metodo {
@@ -540,7 +580,7 @@ details.falha .status {
 #log-itens pre {
   margin: 0;
   padding: 10px 14px 14px;
-  background: #0b1220;
+  background: #071526;
   white-space: pre-wrap;
   word-break: break-all;
   color: #cbd5e1;
@@ -586,7 +626,11 @@ details.falha .status {
 }
 
 .tela-logo {
-  height: 30px;
+  height: 32px;
+}
+
+.tela-simbolo {
+  height: 28px;
 }
 
 .tela-titulos small {
@@ -775,8 +819,8 @@ label.checkbox {
 }
 
 .visor.qrcode {
-  background: #e6f4f5;
-  color: var(--acento);
+  background: var(--gelo);
+  color: var(--marinho);
 }
 
 .botoes {

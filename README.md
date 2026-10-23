@@ -46,6 +46,9 @@ src/
   telas/icones.ts  -> ícones (biblioteca Lucide, empacotada no app)
 ```
 
+Identidade visual (logos, fonte Funnel Display e paleta) em `public/imagens`,
+`public/fontes` e no início de `src/index.css`.
+
 ## Telas
 
 | Arquivo                     | Tela                                                             | Como abrir      |

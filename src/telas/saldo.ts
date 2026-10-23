@@ -20,7 +20,7 @@ export function abrirConsultaSaldo(): Promise<void> {
     `<label>${rotulo}</label><input data-id="${id}" class="${classe}" readonly tabindex="-1" />`;
 
   const tela = new Tela(
-    { titulo: 'TEF Convcard - Consulta', largura: 820, logo: false },
+    { titulo: 'TEF Convcard - Consulta', largura: 820 },
     `<div class="cabecalho-consulta">
        <div>
          <div class="linha"><label>Cartão:</label><input data-id="cartao" class="campo-grande" placeholder="Informe aqui o número do cartão" autocomplete="off" /></div>

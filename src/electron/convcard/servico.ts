@@ -311,6 +311,8 @@ async function finalizarPendente(acao: 'confirmar' | 'desfazer'): Promise<void> 
   }
 
   const endpoint = ENDPOINTS_PENDENTE[pendente.tipo][acao];
+  const nst = (pendente.movimento as { nst: number }).nst;
+  console.info(`[CONVCARD] ${acao === 'confirmar' ? 'Confirmando' : 'Desfazendo'} ${pendente.tipo} (NST ${nst})`);
   if (endpoint) {
     try {
       await enviar<void>(endpoint[0], endpoint[1], pendente.movimento);
@@ -318,7 +320,12 @@ async function finalizarPendente(acao: 'confirmar' | 'desfazer'): Promise<void> 
       // O autorizador recebeu e recusou (ex.: transação já desfeita): reenviar
       // não adianta, então a pendência é descartada. Sem resposta (rede,
       // timeout, 5xx, certificado), ela continua salva para nova tentativa.
-      if (e instanceof ConvcardErro && e.recusado) removerPendente();
+      const recusado = e instanceof ConvcardErro && e.recusado;
+      console.warn(
+        `[CONVCARD] Falha ao ${acao} ${pendente.tipo} (NST ${nst}): ${(e as Error).message}. ` +
+          (recusado ? 'Recusado pelo autorizador; pendência descartada.' : 'Pendência mantida para nova tentativa.'),
+      );
+      if (recusado) removerPendente();
       throw e;
     }
   } else {
@@ -333,6 +340,7 @@ async function finalizarPendente(acao: 'confirmar' | 'desfazer'): Promise<void> 
   if (acao === 'confirmar') {
     salvarUltimaTransacao(GRUPO_REIMPRESSAO[pendente.tipo], pendente.comprovante);
   }
+  console.info(`[CONVCARD] ${pendente.tipo} (NST ${nst}) ${acao === 'confirmar' ? 'confirmado' : 'desfeito'}`);
 }
 
 /**
@@ -343,6 +351,7 @@ async function desfazerPendenteAnterior(): Promise<void> {
   if (!(await obterPendente())) {
     return;
   }
+  console.info('[CONVCARD] Existe transação pendente anterior; desfazendo antes da nova transação');
   try {
     await desfazerPendente();
   } catch (e) {

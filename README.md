@@ -34,6 +34,14 @@ Na primeira execução abre a tela de configuração. Informe:
 
 Use **Validar configuração [F3]** para testar.
 
+Roda no Windows e no Linux (`npm run make` gera instalador Squirrel no Windows,
+`.deb`/`.rpm`/`.zip` no Linux). Banco e logs ficam na pasta de dados do app:
+
+| Sistema | Pasta |
+| ------- | ----- |
+| Windows | `%APPDATA%\PDV Convcard Exemplo` (logs em `logs\`) |
+| Linux   | `~/.config/PDV Convcard Exemplo` (logs em `logs/`) |
+
 ## Arquitetura
 
 ```
@@ -42,6 +50,9 @@ src/
     main.ts                 janela + handlers IPC + PDF da fatura
     preload.ts              expõe window.convcard para as telas
     armazenamento.ts        SQLite (node:sqlite): config, NST, pendência, últimos comprovantes
+    cripto.ts               criptografia da pendência (cartão/QR Code)
+    log.ts                  log em arquivo: console do main e do renderer, IPC, HTTP
+    mascara.ts              máscara de dados sensíveis nos logs
     convcard/
       cliente.ts            HTTP com certificado de cliente (mTLS) e tratamento de erros
       servico.ts            uma função por endpoint + NST, confirmação/desfazimento e pendências

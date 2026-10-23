@@ -129,8 +129,18 @@ depender da memória do programa:
 No exemplo, a pendência fica na tabela SQLite `transacao_pendente`
 (`src/electron/armazenamento.ts`), com no máximo uma linha. O registro inteiro
 (tipo, corpo da confirmação/desfazimento e comprovante) é serializado em JSON
-e criptografado com o `safeStorage` do Electron (no Windows, DPAPI: só o mesmo
-usuário do sistema, na mesma máquina, consegue ler):
+e criptografado (`src/electron/cripto.ts`):
+
+| Sistema | Como criptografa |
+| --- | --- |
+| Windows | `safeStorage` do Electron = DPAPI (chave ligada ao usuário do Windows) |
+| Linux com cofre de senhas (gnome-keyring/libsecret, KWallet) | `safeStorage` do Electron, chave no cofre |
+| Linux sem cofre | AES-256-GCM com chave aleatória em `<userData>/pendencia.key`, permissão `0600` |
+| macOS | `safeStorage` do Electron = Keychain |
+
+No Linux sem cofre o `safeStorage` usa o backend `basic_text`, que criptografa
+com uma senha fixa conhecida (não protege nada); por isso o exemplo usa a
+chave local nesse caso. O primeiro byte do dado gravado indica o método.
 
 ```sql
 CREATE TABLE transacao_pendente (
@@ -140,8 +150,8 @@ CREATE TABLE transacao_pendente (
 ```
 
 ```ts
-salvarPendente(p)  -> await safeStorage.encryptStringAsync(JSON.stringify(p))
-obterPendente()    -> JSON.parse((await safeStorage.decryptStringAsync(dados)).result)
+salvarPendente(p)  -> await criptografar(JSON.stringify(p))
+obterPendente()    -> JSON.parse(await descriptografar(dados))
 ```
 
 - Sem criptografia disponível, a pendência **não** é gravada em texto puro: a

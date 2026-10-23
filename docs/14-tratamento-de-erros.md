@@ -96,18 +96,50 @@ suporte Convcard), **mascarando dados sensíveis**:
 
 | Dado | Como o exemplo mascara |
 | --- | --- |
-| `cartao` | 4 primeiros + `*` + 4 últimos |
-| `cvv` | `***` |
-| `senha` | `****` |
+| `cartao`, `token` | 4 primeiros + `*` + 4 últimos |
+| `cvv`, `senha`, `qrcode` | `***` |
+
+A máscara (`src/electron/mascara.ts`) percorre o objeto inteiro, inclusive
+listas e objetos aninhados.
 
 O exemplo mostra esse log no painel "Log da integração" (método, caminho,
-status, duração, corpo da requisição e da resposta).
+status, duração, corpo da requisição e da resposta) e também o grava no
+arquivo de log.
+
+## Log em arquivo
+
+`src/electron/log.ts` grava um arquivo por dia em `<userData>/logs`
+(Windows: `%APPDATA%\PDV Convcard Exemplo\logs`; Linux:
+`~/.config/PDV Convcard Exemplo/logs`), com retenção de 30 dias:
+
+```
+2026-10-23 15:04:05.123 [INFO ] [main] [IPC] solicitarCompra iniciado [{"valor":38.15,"cartao":"6060***********4567","cvv":"***",...}]
+2026-10-23 15:04:05.130 [DEBUG] [main] [BANCO] NST gerado: 1301
+2026-10-23 15:04:05.812 [INFO ] [main] [HTTP] POST https://aut-h.convcard.com.br/autorizador/compra/solicitacao -> HTTP 200 (682 ms)
+2026-10-23 15:04:05.815 [INFO ] [main] [BANCO] Transação pendente gravada (criptografada): COMPRA
+2026-10-23 15:04:06.020 [INFO ] [renderer] [TELA] Aberta: app-impressora (main.js:1)
+```
+
+| O que vai para o log | Onde é gerado |
+| --- | --- |
+| Início/fim do app, versão, sistema | `iniciarLog()` em `log.ts`, `main.ts` |
+| Cada operação IPC: parâmetros (mascarados), duração, sucesso/erro | `registrarHandlers()` em `main.ts` |
+| Cada requisição ao autorizador: método, URL, status, duração; corpos em DEBUG (mascarados) | `aoRegistrarLog` em `main.ts` |
+| Banco: abertura/fechamento, configuração salva, NST, pendência gravada/removida, comprovante | `armazenamento.ts` |
+| Confirmação/desfazimento e pendências | `servico.ts` |
+| Tudo que a tela escreve no console (telas abertas/fechadas, mensagens ao operador, confirmações, impressão, erros do Angular) | `capturarConsoleDoRenderer()` em `log.ts` + `dialogos.service.ts` |
+| Travamento/queda da tela, falha de carga, erro no preload, exceções não tratadas do main | `log.ts` |
+
+Como o console do main e o do renderer são redirecionados para o arquivo,
+qualquer `console.info/warn/error` novo já aparece no log.
 
 ## No exemplo
 
 | O quê | Onde |
 | --- | --- |
-| Montagem do erro, erros de rede/certificado, timeout, máscara | `src/electron/convcard/cliente.ts` (`montarErro`, `traduzirErroDeRede`, `mascararDadosSensiveis`) |
+| Montagem do erro, erros de rede/certificado, timeout | `src/electron/convcard/cliente.ts` (`montarErro`, `traduzirErroDeRede`) |
+| Máscara de dados sensíveis | `src/electron/mascara.ts` |
+| Log em arquivo | `src/electron/log.ts` |
 | Envelope do erro até a tela (`{ ok: false, erro: { mensagem, codigo, nsu, status } }`) | `registrarHandlers()` em `src/electron/main.ts` e `chamar()` em `src/electron/preload.ts` |
 | Texto exibido ao operador | `mensagemErro()` em `src/angular/app/core/util.ts` |
 | Painel de log | `src/angular/app/pdv/log-integracao.component.*` |

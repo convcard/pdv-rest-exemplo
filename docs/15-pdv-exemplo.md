@@ -59,8 +59,11 @@ src/
     main.ts                 janela, handlers IPC, emissão do PDF da fatura
     preload.ts              expõe window.convcard (uma função por operação)
     armazenamento.ts        SQLite: configuração, NST, pendência, últimos comprovantes
+    cripto.ts               criptografia da pendência (safeStorage ou AES com chave local)
+    log.ts                  log em arquivo (console do main e do renderer)
+    mascara.ts              máscara de dados sensíveis para os logs
     convcard/
-      cliente.ts            HTTP com mTLS, leitura JSON/binária, erros, máscara de log
+      cliente.ts            HTTP com mTLS, leitura JSON/binária, erros
       servico.ts            uma função por endpoint; NST; pendências; confirmação/desfazimento
 
   shared/                   Usado pelos dois lados
@@ -147,13 +150,19 @@ Tipos: `cartao`, `cpf`, `cep`, `numero` (com `[tamanho]`), `valor`, `maiusculas`
 ## Banco SQLite
 
 Arquivo `pdv-convcard.db` na pasta de dados do app (Windows:
-`%APPDATA%\PDV Convcard Exemplo`).
+`%APPDATA%\PDV Convcard Exemplo`; Linux: `~/.config/PDV Convcard Exemplo`).
+
+Uma única conexão é aberta no primeiro uso e fechada ao encerrar o app
+(`fecharBanco()` no `will-quit`). Num processo só, esse é o uso recomendado do
+SQLite: cada comando já é gravado em disco ao terminar (autocommit), então uma
+queda do PDV não perde dados, e não há custo de reabrir o arquivo, recriar o
+schema e reaplicar os PRAGMAs a cada operação.
 
 | Tabela | Conteúdo |
 | --- | --- |
 | `configuracao` | Token da loja, caminhos do `.crt` e da `.key`, flags de receita/nota, nome e versão do software |
 | `sequencia_nst` | Último NST (incremento atômico com `INSERT ... ON CONFLICT ... RETURNING`) |
-| `transacao_pendente` | Transação aprovada aguardando confirmação/desfazimento (no máximo uma). Único lugar com cartão/QR Code: registro inteiro criptografado (safeStorage/DPAPI) e apagado após o uso |
+| `transacao_pendente` | Transação aprovada aguardando confirmação/desfazimento (no máximo uma). Único lugar com cartão/QR Code: registro inteiro criptografado (`cripto.ts`) e apagado após o uso |
 | `ultima_transacao` | Último comprovante confirmado de cada tipo (reimpressão) |
 
 ## Como adaptar ao seu PDV

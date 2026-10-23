@@ -16,6 +16,7 @@ import https from 'node:https';
 import fs from 'node:fs';
 import type { Configuracao, LogIntegracao } from '../../shared/ipc';
 import type { ErrorModel } from '../../shared/modelos';
+import { mascararDadosSensiveis } from '../mascara';
 
 /**
  * URL do ambiente de homologação (a mesma da descrição do swagger).
@@ -259,18 +260,4 @@ function traduzirErroDeRede(e: NodeJS.ErrnoException): ConvcardErro {
     return new ConvcardErro('Certificado (.crt) ou chave (.key) inválidos. Use os arquivos PEM fornecidos pela Convcard.');
   }
   return new ConvcardErro(`Erro inesperado na integração com a Convcard: ${e.message}`);
-}
-
-/** Evita que número do cartão, CVV e senha apareçam por completo no log. */
-function mascararDadosSensiveis(valor: unknown): unknown {
-  if (!valor || typeof valor !== 'object') {
-    return valor;
-  }
-  const copia: Record<string, unknown> = { ...(valor as Record<string, unknown>) };
-  if (typeof copia.cartao === 'string' && copia.cartao.length > 8) {
-    copia.cartao = copia.cartao.slice(0, 4) + '*'.repeat(copia.cartao.length - 8) + copia.cartao.slice(-4);
-  }
-  if (copia.cvv) copia.cvv = '***';
-  if (copia.senha) copia.senha = '****';
-  return copia;
 }

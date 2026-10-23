@@ -7,7 +7,7 @@
  * (ou undefined se ela foi fechada sem resultado).
  */
 import { Dialog } from '@angular/cdk/dialog';
-import { Injectable, inject, signal, type Type } from '@angular/core';
+import { Injectable, inject, reflectComponentType, signal, type Type } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { AtencaoComponent } from '../dialogos/atencao.component';
 import { ConfirmacaoComponent } from '../dialogos/confirmacao.component';
@@ -29,8 +29,16 @@ export class DialogosService {
     return this.dialog.openDialogs.length > 0;
   }
 
-  /** Abre uma tela modal e aguarda o resultado. */
+  /**
+   * Abre uma tela modal e aguarda o resultado.
+   *
+   * Abertura e fechamento vão para o console, que o main grava no log em
+   * arquivo. Os dados da tela não são registrados (podem conter o cartão).
+   */
   abrir<R, D = unknown>(componente: ComponenteTela<R>, dados?: D): Promise<R | undefined> {
+    // O seletor (ex.: "app-cancelamento") sobrevive à minificação, o nome da classe não
+    const tela = reflectComponentType(componente)?.selector ?? componente.name;
+    console.info(`[TELA] Aberta: ${tela}`);
     const ref = this.dialog.open<R, D, TelaBase<R>>(componente, {
       data: dados,
       width: componente.largura,
@@ -42,11 +50,15 @@ export class DialogosService {
     });
     // As teclas vão só para a modal do topo (o CDK cuida disso)
     const teclas = ref.keydownEvents.subscribe((evento) => ref.componentInstance?.tratarTecla(evento));
-    return firstValueFrom(ref.closed).finally(() => teclas.unsubscribe());
+    return firstValueFrom(ref.closed).finally(() => {
+      teclas.unsubscribe();
+      console.info(`[TELA] Fechada: ${tela}`);
+    });
   }
 
   /** "Mensagem Operador": mensagens da Convcard e avisos; fecha sozinha em 5s. */
   async mensagemOperador(mensagem: string, segundos = 5): Promise<void> {
+    console.info(`[MENSAGEM] ${mensagem}`);
     await this.abrir(MensagemOperadorComponent, { mensagem, segundos });
   }
 
@@ -55,11 +67,14 @@ export class DialogosService {
   }
 
   async atencao(mensagem: string): Promise<void> {
+    console.info(`[ATENÇÃO] ${mensagem}`);
     await this.abrir(AtencaoComponent, mensagem);
   }
 
   async confirmar(mensagem: string, titulo = 'Confirmação'): Promise<boolean> {
-    return (await this.abrir(ConfirmacaoComponent, { mensagem, titulo })) === true;
+    const resposta = (await this.abrir(ConfirmacaoComponent, { mensagem, titulo })) === true;
+    console.info(`[CONFIRMAÇÃO] ${mensagem.replace(/\s+/g, ' ')} -> ${resposta ? 'SIM' : 'NÃO'}`);
+    return resposta;
   }
 
   /** Mostra os erros da validação. Devolve true se não houver erros. */
@@ -74,6 +89,7 @@ export class DialogosService {
    * para trocar a mensagem durante o processo.
    */
   async comProgresso<T>(mensagem: string, acao: (atualizar: (texto: string) => void) => Promise<T>): Promise<T> {
+    console.info(`[AGUARDE] ${mensagem}`);
     const texto = signal(mensagem);
     const ref = this.dialog.open(ProgressoComponent, {
       data: texto,
@@ -94,6 +110,8 @@ export class DialogosService {
    * o operador escolheu "Falha na impressão" (para demonstrar o desfazimento).
    */
   async imprimirComprovante(comprovante: string | undefined, titulo: string): Promise<boolean> {
-    return (await this.abrir(ImpressoraComponent, { comprovante, titulo })) === true;
+    const impresso = (await this.abrir(ImpressoraComponent, { comprovante, titulo })) === true;
+    console.info(`[IMPRESSÃO] Comprovante de ${titulo}: ${impresso ? 'impresso' : 'falha na impressão'}`);
+    return impresso;
   }
 }

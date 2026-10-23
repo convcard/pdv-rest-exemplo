@@ -89,7 +89,7 @@ src/
 | Compra com cartão | `telas/venda-cartao` + `pdv/venda.component.ts` | `solicitarCompra` |
 | Compra com QR Code | `telas/qrcode` | `gerarQrCode`, `solicitarCompraQrCode` |
 | Confirmação/desfazimento | `core/transacao.service.ts` | `confirmarPendente`, `desfazerPendente` |
-| Cancelamento | `telas/cancelamento`, `excluirVenda()` em `pdv/venda.component.ts` | `solicitarCancelamento`, `solicitarCancelamentoQrCode` |
+| Cancelamento | `telas/cancelamento`, `excluirVenda()` em `pdv/venda.component.ts` | `solicitarCancelamento` |
 | Consulta de saldo | `telas/consulta-saldo` | `consultarSaldo`, `consultarSaldoDevedor` |
 | Fatura e PDF | `telas/emissao-fatura` | `consultarFatura`, `baixarFaturaPdf` (+ `emitirFatura` no main.ts) |
 | Recebimentos | `telas/recebimento` | `solicitarRecebimento`, `solicitarRecebimentoAntecipado` |
@@ -151,9 +151,9 @@ Arquivo `pdv-convcard.db` na pasta de dados do app (Windows:
 
 | Tabela | Conteúdo |
 | --- | --- |
-| `configuracao` | Token da loja, caminhos do `.crt` e da `.key`, flags de receita/nota/itens, nome e versão do software |
+| `configuracao` | Token da loja, caminhos do `.crt` e da `.key`, flags de receita/nota, nome e versão do software |
 | `sequencia_nst` | Último NST (incremento atômico com `INSERT ... ON CONFLICT ... RETURNING`) |
-| `transacao_pendente` | Transação aprovada aguardando confirmação/desfazimento (no máximo uma) |
+| `transacao_pendente` | Transação aprovada aguardando confirmação/desfazimento (no máximo uma). Único lugar com cartão/QR Code: registro inteiro criptografado (safeStorage/DPAPI) e apagado após o uso |
 | `ultima_transacao` | Último comprovante confirmado de cada tipo (reimpressão) |
 
 ## Como adaptar ao seu PDV

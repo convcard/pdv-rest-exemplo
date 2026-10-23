@@ -8,11 +8,11 @@
       [(ngModel)]="cvv" [disabled]="!cvvHabilitado()" />
 
     <label>Valor:</label>
-    <input class="campo-grande" appMascara="valor" [(ngModel)]="valor" />
+    <input class="campo-grande" appMascara="valor" [(ngModel)]="valor" [readonly]="!!venda" [tabindex]="venda ? -1 : 0" />
     <span></span>
 
     <label>Autorização:</label>
-    <input class="campo-grande" appMascara="numero" [tamanho]="5" [(ngModel)]="autorizacao" />
+    <input class="campo-grande" appMascara="numero" [tamanho]="5" [(ngModel)]="autorizacao" [readonly]="!!venda" [tabindex]="venda ? -1 : 0" />
     <span></span>
   </div>
 

@@ -38,6 +38,8 @@ export class ConvcardErro extends Error {
     readonly status = 0,
     readonly codigo?: string,
     readonly nsu?: number,
+    /** true quando o autorizador processou e recusou a requisição (HTTP 4xx de negócio) */
+    readonly recusado = false,
   ) {
     super(mensagem);
   }
@@ -233,7 +235,7 @@ function montarErro(status: number, resposta: unknown, texto: string): ConvcardE
 
   const mensagem =
     erro.message || erro.error || `Erro HTTP ${status} na comunicação com a Convcard.`;
-  return new ConvcardErro(mensagem, status, erro.code, erro.nsu);
+  return new ConvcardErro(mensagem, status, erro.code, erro.nsu, status >= 400 && status < 500);
 }
 
 /** Mensagens amigáveis para os erros mais comuns de rede/certificado. */

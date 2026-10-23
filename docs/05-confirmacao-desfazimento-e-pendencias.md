@@ -19,8 +19,7 @@ cliente por uma venda que não aconteceu no caixa (ou o contrário).
 | --- | --- | --- | --- |
 | Compra com cartão | `PUT /compra/confirmacao` | `DELETE /compra/desfazimento` | `MovimentoModel` |
 | Compra com QR Code | `PUT /qrcode-pdv/confirmacao-compra-qrcode` | `DELETE /qrcode-pdv/desfazimento-compra-qrcode` | `MovimentoQrCodeModel` |
-| Cancelamento (cartão) | `DELETE /cancelamento/confirmacao` | `DELETE /cancelamento/desfazimento` | `MovimentoModel` |
-| Cancelamento (QR Code) | `DELETE /qrcode-pdv/confirmacao-cancelamento-compra-qrcode` | `DELETE /qrcode-pdv/desfazimento-cancelamento-compra-qrcode` | `MovimentoQrCodeModel` |
+| Cancelamento | `DELETE /cancelamento/confirmacao` | `DELETE /cancelamento/desfazimento` | `MovimentoModel` |
 | Recebimento de fatura | `PUT /pagamento/confirmacao-pagamento` | não existe | `ConfirmacaoPagamentoModel` |
 | Recebimento antecipado | `PUT /pagamento/confirmacao-pagamento-antecipado` | não existe | `ConfirmacaoPagamentoAntecipadoModel` |
 
@@ -48,7 +47,7 @@ Todas respondem **HTTP 200 sem corpo** em caso de sucesso.
 | `valor` | number | sim | Valor do Movimento (mín. 0.01) | `1.5` |
 | `autorizacao` | integer (int32) | sim | Número da autorização | `123` |
 
-**MovimentoQrCodeModel** (compra e cancelamento com QR Code):
+**MovimentoQrCodeModel** (compra com QR Code):
 
 **MovimentoQrCodeModel**
 
@@ -120,17 +119,39 @@ depender da memória do programa:
 | Corpo pronto da confirmação/desfazimento | Mesmo NST, cartão/QR Code, valor e autorização |
 | Comprovante | Para a reimpressão ([doc 13](13-comprovantes-e-reimpressao.md)) |
 
+> **Dados sensíveis:** o PDV não deve gravar número do cartão, CVV ou QR Code
+> no banco. A pendência é a **única exceção**: o corpo da confirmação/desfazimento
+> leva o cartão (ou o QR Code), e ele precisa sobreviver a uma queda do PDV para
+> que a transação possa ser desfeita. Por isso a pendência é **apagada assim que
+> for usada** (confirmada, desfeita ou recusada pelo autorizador) e gravada
+> **sempre criptografada**.
+
 No exemplo, a pendência fica na tabela SQLite `transacao_pendente`
-(`src/electron/armazenamento.ts`), com no máximo uma linha:
+(`src/electron/armazenamento.ts`), com no máximo uma linha. O registro inteiro
+(tipo, corpo da confirmação/desfazimento e comprovante) é serializado em JSON
+e criptografado com o `safeStorage` do Electron (no Windows, DPAPI: só o mesmo
+usuário do sistema, na mesma máquina, consegue ler):
 
 ```sql
 CREATE TABLE transacao_pendente (
-  id          INTEGER PRIMARY KEY CHECK (id = 1),
-  tipo        TEXT NOT NULL,  -- COMPRA, COMPRA_QRCODE, CANCELAMENTO, ...
-  movimento   TEXT NOT NULL,  -- JSON do corpo da confirmação/desfazimento
-  comprovante TEXT
+  id    INTEGER PRIMARY KEY CHECK (id = 1),
+  dados BLOB NOT NULL  -- JSON do registro, criptografado
 );
 ```
+
+```ts
+salvarPendente(p)  -> await safeStorage.encryptStringAsync(JSON.stringify(p))
+obterPendente()    -> JSON.parse((await safeStorage.decryptStringAsync(dados)).result)
+```
+
+- Sem criptografia disponível, a pendência **não** é gravada em texto puro: a
+  transação é interrompida com erro.
+- Se o registro não puder ser descriptografado (banco copiado de outro
+  usuário/máquina), ele é descartado.
+- O banco é aberto com `PRAGMA secure_delete = ON`, para que a pendência
+  apagada não continue legível nas páginas livres do arquivo.
+- Em outras linguagens use o equivalente: DPAPI (`ProtectedData` no .NET,
+  `CryptProtectData` no Delphi/C++) ou AES com chave guardada fora do banco.
 
 ### Recuperação
 
@@ -143,9 +164,9 @@ O exemplo aplica duas regras de recuperação:
 
 | Situação | O que fazer |
 | --- | --- |
-| Confirmação falhou por erro de rede/timeout | Mantenha a pendência e tente de novo. Não remova sem resposta de sucesso |
+| Confirmação falhou por erro de rede/timeout/5xx | Mantenha a pendência e tente de novo |
 | Desfazimento falhou | Mantenha a pendência; ela será desfeita ao reabrir o PDV ou antes da próxima transação |
-| Confirmação/desfazimento devolveu erro de negócio (HTTP 4xx com `message`) | Mostre a mensagem e registre o caso para análise com a Convcard |
+| Confirmação/desfazimento devolveu erro de negócio (HTTP 4xx com `message`) | A pendência é descartada (reenviar não adianta). Mostre a mensagem e registre o caso para análise com a Convcard |
 
 O swagger não descreve se reenviar uma confirmação já processada é aceito
 (idempotência). Combine com a Convcard o procedimento para reenvios.

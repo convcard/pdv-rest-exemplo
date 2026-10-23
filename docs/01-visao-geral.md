@@ -104,9 +104,9 @@ de token são chamadas simples, sem confirmação.
 | Cancelamento | `/cancelamento/solicitacao` | DELETE | [06](06-cancelamento.md) |
 | | `/cancelamento/confirmacao` | DELETE | [06](06-cancelamento.md) |
 | | `/cancelamento/desfazimento` | DELETE | [06](06-cancelamento.md) |
-| | `/qrcode-pdv/solicitacao-cancelamento-compra-qrcode` | DELETE | [06](06-cancelamento.md) |
-| | `/qrcode-pdv/confirmacao-cancelamento-compra-qrcode` | DELETE | [06](06-cancelamento.md) |
-| | `/qrcode-pdv/desfazimento-cancelamento-compra-qrcode` | DELETE | [06](06-cancelamento.md) |
+| | `/qrcode-pdv/solicitacao-cancelamento-compra-qrcode` | DELETE | [06](06-cancelamento.md#rotas-de-cancelamento-de-qr-code) (só cancelamento automático; não usado no exemplo) |
+| | `/qrcode-pdv/confirmacao-cancelamento-compra-qrcode` | DELETE | [06](06-cancelamento.md#rotas-de-cancelamento-de-qr-code) (idem) |
+| | `/qrcode-pdv/desfazimento-cancelamento-compra-qrcode` | DELETE | [06](06-cancelamento.md#rotas-de-cancelamento-de-qr-code) (idem) |
 | Consulta | `/consulta/saldo` | POST | [07](07-consulta-saldo.md) |
 | | `/consulta/saldo-devedor` | POST | [07](07-consulta-saldo.md) |
 | | `/consulta/fatura` | POST | [08](08-fatura.md) |

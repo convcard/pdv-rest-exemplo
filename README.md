@@ -29,7 +29,6 @@ Na primeira execução abre a tela de configuração. Informe:
 | Token da loja                  | Token (UUID) fornecido pela Convcard, enviado como `identificadorLoja` |
 | Enviar dados receita           | Exibe os campos de receita médica na venda                             |
 | Enviar número nota             | Envia o número do cupom/nota na venda                                  |
-| Enviar itens da venda          | Envia a lista de produtos na compra (opcional na API)                  |
 | Certificado (.crt) + chave (.key) | Fornecidos pela Convcard (PEM; chave `BEGIN RSA PRIVATE KEY`, sem senha) |
 | Nome / versão do software      | Identificação do seu PDV                                               |
 
@@ -133,11 +132,10 @@ transação é confirmada) ou "Falha na impressão" (a transação é desfeita).
 | CEP                         | `POST /consulta/consulta-cep`                                    | Atualização de endereço       |
 | Compra cartão               | `POST /compra/solicitacao`, `PUT /compra/confirmacao`, `DELETE /compra/desfazimento` | Venda |
 | Compra QR Code PDV          | `POST /qrcode-pdv/gerar`, `POST /qrcode-pdv/solicitacao-compra-qrcode`, `PUT /qrcode-pdv/confirmacao-compra-qrcode`, `DELETE /qrcode-pdv/desfazimento-compra-qrcode` | Venda (F3) |
-| Cancelamento cartão         | `DELETE /cancelamento/solicitacao`, `/confirmacao`, `/desfazimento` | Cancelamento / excluir venda |
-| Cancelamento QR Code        | `DELETE /qrcode-pdv/solicitacao-cancelamento-compra-qrcode`, `/confirmacao-cancelamento-compra-qrcode`, `/desfazimento-cancelamento-compra-qrcode` | Excluir venda |
+| Cancelamento                | `DELETE /cancelamento/solicitacao`, `/confirmacao`, `/desfazimento` (sempre pelo cartão) | Cancelamento / excluir venda |
 | Recebimento                 | `POST /pagamento/solicitacao-pagamento`, `PUT /pagamento/confirmacao-pagamento` | Recebimento |
 | Recebimento antecipado      | `POST /pagamento/solicitacao-pagamento-antecipado`, `PUT /pagamento/confirmacao-pagamento-antecipado` | Recebimento |
 | Atualizar endereço          | `PUT /endereco/atualizacao`                                      | Atualização de endereço       |
 | Cadastrar token             | `POST /token/cadastrar`                                          | Cadastro de token             |
 
-Alguns endpoints (fatura PDF, token e cancelamento de QR Code) precisam ser liberados pelo suporte Convcard.
+Alguns endpoints (fatura PDF e token) precisam ser liberados pelo suporte Convcard.

@@ -23,7 +23,7 @@ implementar, com referência ao código do PDV de exemplo deste repositório.
 | 03 | [Compra com cartão](03-compra-cartao.md) | `/compra/solicitacao`, `/compra/confirmacao`, `/compra/desfazimento` |
 | 04 | [Compra com QR Code (QRCode PDV)](04-compra-qrcode-pdv.md) | `/qrcode-pdv/gerar`, `/qrcode-pdv/solicitacao-compra-qrcode`, confirmação/desfazimento |
 | 05 | [Confirmação, desfazimento e pendências](05-confirmacao-desfazimento-e-pendencias.md) | todos os endpoints de confirmação/desfazimento |
-| 06 | [Cancelamento de compra](06-cancelamento.md) | `/cancelamento/*`, `/qrcode-pdv/*-cancelamento-compra-qrcode` |
+| 06 | [Cancelamento de compra](06-cancelamento.md) | `/cancelamento/*` (sempre pelo cartão) |
 | 07 | [Consulta de saldo e saldo devedor](07-consulta-saldo.md) | `/consulta/saldo`, `/consulta/saldo-devedor` |
 | 08 | [Consulta de fatura e emissão do PDF](08-fatura.md) | `/consulta/fatura`, `/consulta/fatura-pdf` |
 | 09 | [Recebimento de fatura](09-recebimento-fatura.md) | `/pagamento/solicitacao-pagamento`, `/pagamento/confirmacao-pagamento` |

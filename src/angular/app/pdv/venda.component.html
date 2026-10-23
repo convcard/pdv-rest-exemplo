@@ -55,7 +55,7 @@
 <section class="cartao">
   <div class="cartao-cabecalho">
     <h2><app-icone nome="recebimento" />Vendas finalizadas</h2>
-    <span class="dica">Excluir uma venda cancela automaticamente a transação Convcard.</span>
+    <span class="dica">Excluir uma venda cancela a transação Convcard (pede o número do cartão).</span>
   </div>
   <table class="grade">
     <thead>
@@ -74,7 +74,7 @@
         <tr>
           <td>{{ venda.numero }}</td>
           <td>{{ venda.data | date: 'dd/MM/yyyy' }}</td>
-          <td>{{ descricaoPagamento(venda.meio) }}</td>
+          <td>{{ descricaoPagamento(venda) }}</td>
           <td class="num">{{ venda.valor | currency: 'BRL' }}</td>
           <td class="num">{{ venda.autorizacao }}</td>
           <td class="num">{{ venda.nsu }}</td>

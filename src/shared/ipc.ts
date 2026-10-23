@@ -42,8 +42,6 @@ export interface Configuracao {
   usaReceita: boolean;
   /** Envia o número do cupom/nota na venda */
   usaNumNota: boolean;
-  /** Envia a lista de itens (campo "produtos", opcional na API) na compra */
-  enviaItens: boolean;
   nomeSoftware: string;
   versaoSoftware: string;
 }
@@ -79,12 +77,6 @@ export interface DadosCompraCartao extends DadosCompra {
 export interface DadosCancelamentoCartao {
   cartao: string;
   cvv?: string;
-  valor: number;
-  autorizacao: number;
-}
-
-export interface DadosCancelamentoQrCode {
-  qrcode: string;
   valor: number;
   autorizacao: number;
 }
@@ -164,7 +156,6 @@ export interface ConvcardApi {
 
   // Cancelamento
   solicitarCancelamento(dados: DadosCancelamentoCartao): Promise<RetornoMovimentoModel>;
-  solicitarCancelamentoQrCode(dados: DadosCancelamentoQrCode): Promise<RetornoMovimentoModel>;
 
   // Recebimento
   solicitarRecebimento(nsuFatura: number, valor: number): Promise<PagamentoFaturaModel>;
@@ -199,7 +190,6 @@ export const OPERACOES = [
   'gerarQrCode',
   'solicitarCompraQrCode',
   'solicitarCancelamento',
-  'solicitarCancelamentoQrCode',
   'solicitarRecebimento',
   'solicitarRecebimentoAntecipado',
   'confirmarPendente',

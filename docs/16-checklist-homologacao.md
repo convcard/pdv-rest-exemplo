@@ -47,7 +47,7 @@ use esta lista como preparação.
 
 - [ ] Cancelamento de compra com cartão → confirmação.
 - [ ] Cancelamento com falha de impressão → desfazimento do cancelamento.
-- [ ] Cancelamento de compra feita por QR Code (se liberado).
+- [ ] Cancelamento de compra feita por QR Code, informando o número do cartão.
 - [ ] Cancelamento recusado (autorização/valor inválidos).
 
 ## Consultas

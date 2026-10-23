@@ -9,26 +9,17 @@ use o desfazimento ([doc 05](05-confirmacao-desfazimento-e-pendencias.md)).
 O cancelamento é uma transação de duas etapas, com NST próprio: solicitação e
 depois confirmação ou desfazimento.
 
-## Endpoints
+> **O cancelamento é sempre pelo número do cartão**, inclusive para compras
+> pagas com QR Code. O operador pede o cartão ao cliente (o PDV não guarda o
+> número do cartão nem o QR Code).
 
-### Compra feita com cartão
+## Endpoints
 
 | Etapa | Método | Endpoint | Corpo | Resposta |
 | --- | --- | --- | --- | --- |
 | Solicitação | DELETE | `/cancelamento/solicitacao` | `MovimentoModel` | `RetornoMovimentoModel` |
 | Confirmação | DELETE | `/cancelamento/confirmacao` | `MovimentoModel` | 200 sem corpo |
 | Desfazimento | DELETE | `/cancelamento/desfazimento` | `MovimentoModel` | 200 sem corpo |
-
-### Compra feita com QR Code
-
-| Etapa | Método | Endpoint | Corpo | Resposta |
-| --- | --- | --- | --- | --- |
-| Solicitação | DELETE | `/qrcode-pdv/solicitacao-cancelamento-compra-qrcode` | `MovimentoQrCodeModel` | `RetornoMovimentoModel` |
-| Confirmação | DELETE | `/qrcode-pdv/confirmacao-cancelamento-compra-qrcode` | `MovimentoQrCodeModel` | 200 sem corpo |
-| Desfazimento | DELETE | `/qrcode-pdv/desfazimento-cancelamento-compra-qrcode` | `MovimentoQrCodeModel` | 200 sem corpo |
-
-> As rotas de cancelamento de QR Code precisam ter o acesso liberado pelo
-> suporte Convcard (aviso do swagger).
 
 > Todos os endpoints de cancelamento são `DELETE` **com corpo JSON**.
 
@@ -58,13 +49,13 @@ sequenceDiagram
 
 ### Passo a passo
 
-1. Identifique a compra original. Por isso o PDV deve guardar, para cada venda paga com Convcard: **meio** (cartão ou QR Code), **cartão + CVV** ou **QR Code**, **valor** e **autorização** da compra.
+1. Identifique a compra original. O PDV guarda, para cada venda paga com Convcard, o **valor** e a **autorização** da compra. **Cartão, CVV e QR Code não são guardados**: no cancelamento o operador informa o cartão (+ CVV), mesmo que a compra tenha sido paga com QR Code.
 2. Gere um **NST novo** (o cancelamento é uma nova transação).
 3. Envie a solicitação com os dados da compra original (`autorizacao` = autorização da **compra**).
 4. Se aprovado, grave a pendência com a `autorizacao` **devolvida pelo cancelamento**.
 5. Imprima o comprovante do cancelamento e confirme. Se falhar, desfaça.
 
-## Corpo (cartão): MovimentoModel
+## Corpo: MovimentoModel
 
 **MovimentoModel**
 
@@ -92,32 +83,6 @@ sequenceDiagram
 }
 ```
 
-## Corpo (QR Code): MovimentoQrCodeModel
-
-**MovimentoQrCodeModel**
-
-| Campo | Tipo | Obrigatório | Descrição | Exemplo |
-| --- | --- | --- | --- | --- |
-| `nst` | integer (int64) | sim | Número sequencial da transação Este número deve permanecer o mesmo durante todo o processamento da operação em tratamento, mesmo que envolva mais de um fluxo de mensagens (fluxos com continuação). (mín. 1, máx. 9999999999) | `1239` |
-| `nomeSoftware` | string | sim | Nome do Software | `Card Aut App` |
-| `versaoSoftware` | string | sim | Versão Software | `1.205.790` |
-| `identificadorLoja` | string | sim | Identificação da loja | `01c760b2-a9db-429c-ad60-d926f49878cd` |
-| `qrcode` | string | sim | Conteúdo QRCode | `XXXXXX` |
-| `valor` | number | sim | Valor do Movimento (mín. 0.01) | `1.5` |
-| `autorizacao` | integer (int32) | sim | Número da autorização | `123` |
-
-```json
-{
-  "nst": 1302,
-  "nomeSoftware": "PDV Convcard Exemplo",
-  "versaoSoftware": "1.0.0",
-  "identificadorLoja": "01c760b2-a9db-429c-ad60-d926f49878cd",
-  "qrcode": "ABCDEF",
-  "valor": 19.9,
-  "autorizacao": 5555
-}
-```
-
 ## Resposta da solicitação
 
 Mesmo modelo da compra (`RetornoMovimentoModel`): veja a tabela no
@@ -137,12 +102,27 @@ O corpo é o mesmo da solicitação, trocando:
 - O NST do cancelamento é novo; a autorização enviada na solicitação é a da compra.
 - CVV: o exemplo exige CVV para cartões de 19 dígitos, como na venda.
 
+## Rotas de cancelamento de QR Code
+
+O swagger também tem `/qrcode-pdv/solicitacao-cancelamento-compra-qrcode`,
+`/qrcode-pdv/confirmacao-cancelamento-compra-qrcode` e
+`/qrcode-pdv/desfazimento-cancelamento-compra-qrcode` (corpo
+`MovimentoQrCodeModel`, com acesso liberado pelo suporte Convcard). Elas **não
+são o cancelamento do dia a dia** e não são usadas neste exemplo.
+
+Servem para um cenário automático de **venda com múltiplas formas de
+pagamento**: a parte Convcard (paga com QR Code) já foi confirmada e, em
+seguida, falha a confirmação de outra forma de pagamento da mesma venda. Como
+a transação Convcard já está confirmada, não dá mais para desfazê-la: o PDV
+cancela automaticamente pelo QR Code, que ainda está em memória naquele
+momento. Fora desse cenário, cancele sempre pelo cartão.
+
 ## Duas formas de cancelar no exemplo
 
 | Forma | Quando | Endpoints |
 | --- | --- | --- |
-| **Excluir venda** (lista "Vendas finalizadas" do PDV) | Venda feita neste PDV; o PDV já tem meio, cartão/QR Code, valor e autorização | Cartão ou QR Code, conforme o meio da venda |
-| **Cancelamento manual** (Funções → Cancelamento [F2]) | Venda de outro PDV/dia; o operador digita cartão, CVV, valor e autorização | Só cartão |
+| **Excluir venda** (lista "Vendas finalizadas" do PDV) | Venda feita neste PDV (cartão ou QR Code); o PDV já tem valor e autorização e pede o cartão (+ CVV) | `/cancelamento/*` |
+| **Cancelamento manual** (Funções → Cancelamento [F2]) | Venda de outro PDV/dia; o operador digita cartão, CVV, valor e autorização | `/cancelamento/*` |
 
 ## Exceções
 
@@ -151,12 +131,11 @@ O corpo é o mesmo da solicitação, trocando:
 | Solicitação recusada (compra não encontrada, já cancelada etc.) | Mostre `message`; nada a desfazer |
 | Falha ao imprimir o comprovante do cancelamento | Desfaça o cancelamento |
 | Erro na confirmação | Mantenha a pendência e tente de novo |
-| Venda feita por QR Code e loja sem acesso às rotas de cancelamento de QR Code | A solicitação devolve erro; peça a liberação ao suporte Convcard |
 
 ## No exemplo
 
 | O quê | Onde |
 | --- | --- |
-| Excluir venda (cartão ou QR Code) | `excluirVenda()` em `src/angular/app/pdv/venda.component.ts` |
+| Excluir venda | `excluirVenda()` em `src/angular/app/pdv/venda.component.ts`, que abre `src/angular/app/telas/cancelamento/` com valor e autorização da venda |
 | Cancelamento manual | `src/angular/app/telas/cancelamento/` |
-| Chamadas e pendência | `solicitarCancelamento()` e `solicitarCancelamentoQrCode()` em `src/electron/convcard/servico.ts` |
+| Chamadas e pendência | `solicitarCancelamento()` em `src/electron/convcard/servico.ts` |

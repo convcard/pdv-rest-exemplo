@@ -11,8 +11,13 @@
  *  - transacao_pendente:  transação aprovada que ainda não foi confirmada/desfeita
  *  - ultima_transacao:    comprovante da última venda/cancelamento/recebimento
  *                         (para a "Reimpressão do último movimento")
+ *
+ * Número do cartão, CVV e QR Code não são gravados no banco. A única exceção é
+ * a transacao_pendente: ela precisa do movimento completo para desfazer a
+ * transação se o PDV morrer antes da confirmação. O registro inteiro é gravado
+ * CRIPTOGRAFADO e é apagado assim que a transação é confirmada ou desfeita.
  */
-import { app } from 'electron';
+import { app, safeStorage } from 'electron';
 import path from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 import type { Configuracao, TipoReimpressao, UltimaTransacao } from '../shared/ipc';
@@ -23,6 +28,9 @@ let banco: DatabaseSync | undefined;
 function db(): DatabaseSync {
   if (!banco) {
     banco = new DatabaseSync(path.join(app.getPath('userData'), 'pdv-convcard.db'));
+    // Sobrescreve com zeros o conteúdo apagado, para que uma pendência removida
+    // não continue legível nas páginas livres do arquivo.
+    banco.exec('PRAGMA secure_delete = ON');
     banco.exec(`
       CREATE TABLE IF NOT EXISTS configuracao (
         id                  INTEGER PRIMARY KEY CHECK (id = 1),
@@ -30,7 +38,6 @@ function db(): DatabaseSync {
         nome_loja           TEXT    NOT NULL,
         usa_receita         INTEGER NOT NULL,
         usa_num_nota        INTEGER NOT NULL,
-        envia_itens         INTEGER NOT NULL DEFAULT 1,
         caminho_certificado TEXT    NOT NULL, -- arquivo .crt
         caminho_chave       TEXT    NOT NULL, -- arquivo .key
         nome_software       TEXT    NOT NULL,
@@ -42,13 +49,6 @@ function db(): DatabaseSync {
         ultimo INTEGER NOT NULL
       );
 
-      CREATE TABLE IF NOT EXISTS transacao_pendente (
-        id          INTEGER PRIMARY KEY CHECK (id = 1),
-        tipo        TEXT NOT NULL,
-        movimento   TEXT NOT NULL, -- JSON enviado na confirmação/desfazimento
-        comprovante TEXT
-      );
-
       CREATE TABLE IF NOT EXISTS ultima_transacao (
         tipo        TEXT PRIMARY KEY, -- VENDA, CANCELAMENTO ou RECEBIMENTO
         data        TEXT NOT NULL,
@@ -56,6 +56,7 @@ function db(): DatabaseSync {
       );
     `);
     migrarConfiguracao(banco);
+    criarTabelaPendente(banco);
   }
   return banco;
 }
@@ -64,21 +65,17 @@ function db(): DatabaseSync {
  * Ajusta bancos criados por versões anteriores do exemplo:
  *  - certificado .p12 (caminho_certificado + senha_certificado) -> par .crt +
  *    .key; o operador precisa selecionar os arquivos novos;
- *  - coluna envia_itens (padrão: enviar os itens).
+ *  - colunas que não são mais usadas (senhas e envia_itens).
  */
 function migrarConfiguracao(db: DatabaseSync): void {
   const colunas = (db.prepare('PRAGMA table_info(configuracao)').all() as { name: string }[]).map((c) => c.name);
-  if (!colunas.includes('envia_itens')) {
-    db.exec('ALTER TABLE configuracao ADD COLUMN envia_itens INTEGER NOT NULL DEFAULT 1');
-  }
   if (!colunas.includes('caminho_chave')) {
     db.exec(`
       ALTER TABLE configuracao ADD COLUMN caminho_chave TEXT NOT NULL DEFAULT '';
       UPDATE configuracao SET caminho_certificado = '';
     `);
   }
-  // Colunas de senha não são mais usadas (a chave .key não tem senha)
-  for (const coluna of ['senha_certificado', 'senha_chave']) {
+  for (const coluna of ['senha_certificado', 'senha_chave', 'envia_itens']) {
     if (colunas.includes(coluna)) db.exec(`ALTER TABLE configuracao DROP COLUMN ${coluna}`);
   }
 }
@@ -94,7 +91,6 @@ const CONFIG_PADRAO: Configuracao = {
   nomeLoja: 'LOJA EXEMPLO',
   usaReceita: false,
   usaNumNota: false,
-  enviaItens: true,
   nomeSoftware: 'PDV Convcard Exemplo',
   versaoSoftware: app.getVersion(),
 };
@@ -104,7 +100,6 @@ interface LinhaConfiguracao {
   nome_loja: string;
   usa_receita: number;
   usa_num_nota: number;
-  envia_itens: number;
   caminho_certificado: string;
   caminho_chave: string;
   nome_software: string;
@@ -119,7 +114,6 @@ export function obterConfiguracao(): Configuracao {
     nomeLoja: linha.nome_loja,
     usaReceita: linha.usa_receita === 1,
     usaNumNota: linha.usa_num_nota === 1,
-    enviaItens: linha.envia_itens === 1,
     caminhoCertificado: linha.caminho_certificado,
     caminhoChave: linha.caminho_chave,
     nomeSoftware: linha.nome_software,
@@ -131,16 +125,15 @@ export function salvarConfiguracao(config: Configuracao): void {
   db()
     .prepare(
       `INSERT OR REPLACE INTO configuracao
-         (id, identificador_loja, nome_loja, usa_receita, usa_num_nota, envia_itens,
+         (id, identificador_loja, nome_loja, usa_receita, usa_num_nota,
           caminho_certificado, caminho_chave, nome_software, versao_software)
-       VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?)`,
     )
     .run(
       config.identificadorLoja,
       config.nomeLoja,
       config.usaReceita ? 1 : 0,
       config.usaNumNota ? 1 : 0,
-      config.enviaItens ? 1 : 0,
       config.caminhoCertificado,
       config.caminhoChave,
       config.nomeSoftware,
@@ -177,6 +170,47 @@ export function proximoNst(): number {
 // Transação pendente
 // ---------------------------------------------------------------------------
 
+/**
+ * Tabela com no máximo uma linha. A coluna "dados" guarda o registro inteiro
+ * (tipo, movimento com cartão/QR Code e comprovante) criptografado.
+ *
+ * Bancos de versões anteriores tinham a pendência em texto puro (colunas tipo,
+ * movimento e comprovante): a linha é lida, a tabela recriada e a pendência
+ * regravada criptografada na primeira leitura (obterPendente).
+ */
+let pendenteMigrada: RegistroPendente | undefined;
+
+function criarTabelaPendente(db: DatabaseSync): void {
+  const colunas = (db.prepare('PRAGMA table_info(transacao_pendente)').all() as { name: string }[]).map((c) => c.name);
+  if (colunas.includes('movimento')) {
+    const linha = db.prepare('SELECT tipo, movimento, comprovante FROM transacao_pendente WHERE id = 1').get() as
+      | { tipo: string; movimento: string; comprovante: string | null }
+      | undefined;
+    if (linha) pendenteMigrada = { tipo: linha.tipo, movimento: JSON.parse(linha.movimento), comprovante: linha.comprovante ?? undefined };
+    db.exec('DROP TABLE transacao_pendente');
+  }
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS transacao_pendente (
+      id    INTEGER PRIMARY KEY CHECK (id = 1),
+      dados BLOB NOT NULL -- JSON do RegistroPendente criptografado (safeStorage)
+    )
+  `);
+}
+
+/**
+ * Criptografia com o safeStorage do Electron: no Windows usa o DPAPI, com
+ * chave ligada ao usuário do sistema operacional (no macOS, Keychain; no
+ * Linux, o cofre de senhas do desktop). Só o mesmo usuário, na mesma máquina,
+ * consegue descriptografar. Sem criptografia disponível a pendência NÃO é
+ * gravada em texto puro: a transação é interrompida com erro.
+ */
+async function criptografar(pendente: RegistroPendente): Promise<Buffer> {
+  if (!(await safeStorage.isAsyncEncryptionAvailable())) {
+    throw new Error('Criptografia do sistema operacional indisponível: não é possível gravar a transação pendente.');
+  }
+  return safeStorage.encryptStringAsync(JSON.stringify(pendente));
+}
+
 /** Transação aprovada aguardando confirmação/desfazimento (ver servico.ts). */
 export interface RegistroPendente {
   tipo: string;
@@ -191,18 +225,29 @@ export interface RegistroPendente {
  * desfazerPendenteAoIniciar em servico.ts). Isso evita cobrar o cliente por
  * uma venda que não foi concluída no caixa.
  */
-export function obterPendente<T extends RegistroPendente = RegistroPendente>(): T | undefined {
-  const linha = db().prepare('SELECT tipo, movimento, comprovante FROM transacao_pendente WHERE id = 1').get() as
-    | { tipo: string; movimento: string; comprovante: string | null }
-    | undefined;
+export async function obterPendente<T extends RegistroPendente = RegistroPendente>(): Promise<T | undefined> {
+  const banco = db(); // abrir o banco executa a migração (pode preencher pendenteMigrada)
+  if (pendenteMigrada) {
+    await salvarPendente(pendenteMigrada);
+    pendenteMigrada = undefined;
+  }
+  const linha = banco.prepare('SELECT dados FROM transacao_pendente WHERE id = 1').get() as { dados: Uint8Array } | undefined;
   if (!linha) return undefined;
-  return { tipo: linha.tipo, movimento: JSON.parse(linha.movimento), comprovante: linha.comprovante ?? undefined } as T;
+  try {
+    const { result } = await safeStorage.decryptStringAsync(Buffer.from(linha.dados));
+    return JSON.parse(result) as T;
+  } catch (e) {
+    // Ex.: banco copiado de outro usuário/máquina. A pendência não pode ser
+    // usada, então é descartada para não bloquear as próximas transações.
+    console.error('[CONVCARD] Transação pendente ilegível; descartada:', (e as Error).message);
+    removerPendente();
+    return undefined;
+  }
 }
 
-export function salvarPendente(pendente: RegistroPendente): void {
-  db()
-    .prepare('INSERT OR REPLACE INTO transacao_pendente (id, tipo, movimento, comprovante) VALUES (1, ?, ?, ?)')
-    .run(pendente.tipo, JSON.stringify(pendente.movimento), pendente.comprovante ?? null);
+export async function salvarPendente(pendente: RegistroPendente): Promise<void> {
+  const dados = await criptografar(pendente);
+  db().prepare('INSERT OR REPLACE INTO transacao_pendente (id, dados) VALUES (1, ?)').run(dados);
 }
 
 export function removerPendente(): void {

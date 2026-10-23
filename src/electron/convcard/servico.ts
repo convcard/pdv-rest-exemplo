@@ -28,8 +28,6 @@
  *                     DELETE /qrcode-pdv/desfazimento-compra-qrcode
  *   Cancel. cartão    DELETE /cancelamento/confirmacao
  *                     DELETE /cancelamento/desfazimento
- *   Cancel. QR Code   DELETE /qrcode-pdv/confirmacao-cancelamento-compra-qrcode
- *                     DELETE /qrcode-pdv/desfazimento-cancelamento-compra-qrcode
  *   Recebimento       PUT    /pagamento/confirmacao-pagamento
  *                     (não existe desfazimento: basta não confirmar)
  *   Receb. antecipado PUT    /pagamento/confirmacao-pagamento-antecipado
@@ -47,7 +45,6 @@ import {
 } from '../armazenamento';
 import type {
   DadosCancelamentoCartao,
-  DadosCancelamentoQrCode,
   DadosCompraCartao,
   DadosEndereco,
   FiltroFatura,
@@ -94,7 +91,6 @@ type Pendente = { comprovante?: string } & (
   | { tipo: 'COMPRA'; movimento: MovimentoModel }
   | { tipo: 'COMPRA_QRCODE'; movimento: MovimentoQrCodeModel }
   | { tipo: 'CANCELAMENTO'; movimento: MovimentoModel }
-  | { tipo: 'CANCELAMENTO_QRCODE'; movimento: MovimentoQrCodeModel }
   | { tipo: 'RECEBIMENTO'; movimento: ConfirmacaoPagamentoModel }
   | { tipo: 'RECEBIMENTO_ANTECIPADO'; movimento: ConfirmacaoPagamentoAntecipadoModel }
 );
@@ -104,7 +100,6 @@ const GRUPO_REIMPRESSAO = {
   COMPRA: 'VENDA',
   COMPRA_QRCODE: 'VENDA',
   CANCELAMENTO: 'CANCELAMENTO',
-  CANCELAMENTO_QRCODE: 'CANCELAMENTO',
   RECEBIMENTO: 'RECEBIMENTO',
   RECEBIMENTO_ANTECIPADO: 'RECEBIMENTO',
 } as const;
@@ -123,10 +118,6 @@ const ENDPOINTS_PENDENTE: Record<Pendente['tipo'], { confirmar: Endpoint; desfaz
   CANCELAMENTO: {
     confirmar: ['DELETE', '/cancelamento/confirmacao'],
     desfazer: ['DELETE', '/cancelamento/desfazimento'],
-  },
-  CANCELAMENTO_QRCODE: {
-    confirmar: ['DELETE', '/qrcode-pdv/confirmacao-cancelamento-compra-qrcode'],
-    desfazer: ['DELETE', '/qrcode-pdv/desfazimento-cancelamento-compra-qrcode'],
   },
   // Pagamentos não têm desfazimento na API.
   RECEBIMENTO: {
@@ -188,7 +179,7 @@ export async function solicitarCompra(dados: DadosCompraCartao): Promise<Retorno
 
   // Dados necessários para confirmar/desfazer: mesmo NST, cartão e valor da
   // solicitação + autorização devolvida pelo autorizador.
-  salvarPendente({
+  await salvarPendente({
     tipo: 'COMPRA',
     comprovante: retorno.comprovante,
     movimento: {
@@ -248,7 +239,7 @@ export async function solicitarCompraQrCode(
   );
 
   if (!retorno.pendente && retorno.retorno) {
-    salvarPendente({
+    await salvarPendente({
       tipo: 'COMPRA_QRCODE',
       comprovante: retorno.retorno.comprovante,
       movimento: {
@@ -269,9 +260,14 @@ export async function solicitarCompraQrCode(
 //
 // O cancelamento também é uma transação de duas pernas: solicitação e depois
 // confirmação/desfazimento. Para identificar a compra a ser cancelada são
-// usados o cartão (ou QR Code), o valor e o número de autorização da compra.
+// usados o cartão, o valor e o número de autorização da compra.
+//
+// O cancelamento é SEMPRE pelo número do cartão, inclusive para compras
+// feitas com QR Code. As rotas /qrcode-pdv/*-cancelamento-compra-qrcode servem
+// só para o cancelamento automático em vendas com múltiplas formas de
+// pagamento (ver docs/06-cancelamento.md) e não são usadas neste exemplo.
 
-/** DELETE /cancelamento/solicitacao (compra feita com cartão) */
+/** DELETE /cancelamento/solicitacao */
 export async function solicitarCancelamento(dados: DadosCancelamentoCartao): Promise<RetornoMovimentoModel> {
   await desfazerPendenteAnterior();
 
@@ -279,28 +275,8 @@ export async function solicitarCancelamento(dados: DadosCancelamentoCartao): Pro
   const retorno = await enviar<RetornoMovimentoModel>('DELETE', '/cancelamento/solicitacao', corpo);
 
   // Na confirmação vai a autorização devolvida pelo cancelamento (não a da compra)
-  salvarPendente({
+  await salvarPendente({
     tipo: 'CANCELAMENTO',
-    comprovante: retorno.comprovante,
-    movimento: { ...corpo, autorizacao: retorno.autorizacao },
-  } satisfies Pendente);
-
-  return retorno;
-}
-
-/** DELETE /qrcode-pdv/solicitacao-cancelamento-compra-qrcode (compra feita com QR Code) */
-export async function solicitarCancelamentoQrCode(dados: DadosCancelamentoQrCode): Promise<RetornoMovimentoModel> {
-  await desfazerPendenteAnterior();
-
-  const corpo: MovimentoQrCodeModel = { ...base(proximoNst()), ...dados };
-  const retorno = await enviar<RetornoMovimentoModel>(
-    'DELETE',
-    '/qrcode-pdv/solicitacao-cancelamento-compra-qrcode',
-    corpo,
-  );
-
-  salvarPendente({
-    tipo: 'CANCELAMENTO_QRCODE',
     comprovante: retorno.comprovante,
     movimento: { ...corpo, autorizacao: retorno.autorizacao },
   } satisfies Pendente);
@@ -329,22 +305,29 @@ export async function desfazerPendente(): Promise<void> {
 }
 
 async function finalizarPendente(acao: 'confirmar' | 'desfazer'): Promise<void> {
-  const pendente = obterPendente<Pendente>();
+  const pendente = await obterPendente<Pendente>();
   if (!pendente) {
     throw new ConvcardErro('Não há transação pendente.');
   }
 
   const endpoint = ENDPOINTS_PENDENTE[pendente.tipo][acao];
   if (endpoint) {
-    await enviar<void>(endpoint[0], endpoint[1], pendente.movimento);
+    try {
+      await enviar<void>(endpoint[0], endpoint[1], pendente.movimento);
+    } catch (e) {
+      // O autorizador recebeu e recusou (ex.: transação já desfeita): reenviar
+      // não adianta, então a pendência é descartada. Sem resposta (rede,
+      // timeout, 5xx, certificado), ela continua salva para nova tentativa.
+      if (e instanceof ConvcardErro && e.recusado) removerPendente();
+      throw e;
+    }
   } else {
     // Recebimento: sem endpoint de desfazimento. Como a solicitação só é
     // efetivada na confirmação, basta descartar a pendência.
     console.warn(`[CONVCARD] ${pendente.tipo} não possui desfazimento; pendência descartada.`);
   }
 
-  // Só remove depois que o autorizador respondeu com sucesso. Se der erro de
-  // rede, a pendência continua salva para nova tentativa.
+  // Pendência usada: apaga do banco (ela guarda o cartão/QR Code)
   removerPendente();
 
   if (acao === 'confirmar') {
@@ -357,7 +340,7 @@ async function finalizarPendente(acao: 'confirmar' | 'desfazer'): Promise<void> 
  * pendente (mesma regra usada pelos TEFs de mercado).
  */
 async function desfazerPendenteAnterior(): Promise<void> {
-  if (!obterPendente()) {
+  if (!(await obterPendente())) {
     return;
   }
   try {
@@ -371,7 +354,7 @@ async function desfazerPendenteAnterior(): Promise<void> {
 
 /** Chamado ao abrir o PDV: desfaz transação que ficou pendente (ex.: PDV fechou no meio da venda). */
 export async function desfazerPendenteAoIniciar(): Promise<void> {
-  if (!obterPendente()) {
+  if (!(await obterPendente())) {
     return;
   }
   try {
@@ -430,7 +413,7 @@ export async function solicitarRecebimento(nsuFatura: number, valor: number): Pr
   const corpo: SolicitacaoPagamentoModel = { ...base(proximoNst()), nsu: nsuFatura, valor };
   const retorno = await enviar<PagamentoFaturaModel>('POST', '/pagamento/solicitacao-pagamento', corpo);
 
-  salvarPendente({
+  await salvarPendente({
     tipo: 'RECEBIMENTO',
     comprovante: retorno.comprovante,
     movimento: {
@@ -454,7 +437,7 @@ export async function solicitarRecebimentoAntecipado(cartao: string, valor: numb
   const corpo: SolicitacaoPagamentoAntecipadoModel = { ...base(proximoNst()), cartao, valor };
   const retorno = await enviar<PagamentoFaturaAntecipadaModel>('POST', '/pagamento/solicitacao-pagamento-antecipado', corpo);
 
-  salvarPendente({
+  await salvarPendente({
     tipo: 'RECEBIMENTO_ANTECIPADO',
     comprovante: retorno.comprovante,
     movimento: {

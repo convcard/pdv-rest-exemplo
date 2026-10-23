@@ -21,12 +21,6 @@
       <option [ngValue]="false">NÃO</option>
     </select>
 
-    <label>Enviar itens da venda:</label>
-    <select [(ngModel)]="enviaItens">
-      <option [ngValue]="true">SIM</option>
-      <option [ngValue]="false">NÃO</option>
-    </select>
-
     <label>Certificado (.crt):</label>
     <span class="linha">
       <input readonly tabindex="-1" placeholder="Nenhum arquivo selecionado" [value]="arquivoCertificado()" [title]="caminhoCertificado()" />

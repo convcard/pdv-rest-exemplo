@@ -7,9 +7,13 @@
  *     impressão do comprovante e confirmação (ou desfazimento);
  *  3. "000 - APROVADO".
  *
- * Excluir uma venda finalizada cancela a transação Convcard:
- *  - Cartão:      DELETE /cancelamento/solicitacao
- *  - QR Code PDV: DELETE /qrcode-pdv/solicitacao-cancelamento-compra-qrcode
+ * Excluir uma venda finalizada cancela a transação Convcard
+ * (CancelamentoComponent, DELETE /cancelamento/solicitacao). O cancelamento é
+ * sempre pelo número do cartão, mesmo para vendas pagas com QR Code.
+ *
+ * A venda finalizada NÃO guarda o número do cartão nem o QR Code (assim como
+ * um PDV real não deve gravá-los no banco): no cancelamento o operador
+ * informa o cartão de novo.
  */
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
@@ -17,11 +21,11 @@ import { FormsModule } from '@angular/forms';
 import type { DadosCompra, ProdutoModel, TipoProduto } from '../../../shared/modelos';
 import { IconeComponent } from '../componentes/icone.component';
 import { ConfiguracaoService } from '../core/configuracao.service';
-import { CONVCARD_API } from '../core/convcard-api';
 import { DialogosService } from '../core/dialogos.service';
 import { TransacaoService } from '../core/transacao.service';
 import { arredondar, mensagemErro } from '../core/util';
-import { VendaCartaoComponent, type MeioPagamento } from '../telas/venda-cartao/venda-cartao.component';
+import { CancelamentoComponent, type VendaACancelar } from '../telas/cancelamento/cancelamento.component';
+import { VendaCartaoComponent } from '../telas/venda-cartao/venda-cartao.component';
 
 interface ItemCatalogo {
   codigoBarras: number;
@@ -45,7 +49,9 @@ interface VendaFinalizada {
   valor: number;
   autorizacao: number;
   nsu?: number;
-  meio: MeioPagamento;
+  meio: 'cartao' | 'qrcode';
+  /** Últimos 4 dígitos do cartão, só para exibição */
+  finalCartao?: string;
 }
 
 /** Produtos fictícios só para montar a venda (itens comuns: tipo "O" = Outros). */
@@ -84,7 +90,6 @@ function paraProdutoModel(item: ItemVenda): ProdutoModel {
   templateUrl: './venda.component.html',
 })
 export class VendaComponent {
-  private readonly api = inject(CONVCARD_API);
   private readonly dialogos = inject(DialogosService);
   private readonly transacao = inject(TransacaoService);
   private readonly configuracao = inject(ConfiguracaoService);
@@ -110,8 +115,8 @@ export class VendaComponent {
     this.itens.update((itens) => itens.filter((_, i) => i !== indice));
   }
 
-  protected descricaoPagamento(meio: MeioPagamento): string {
-    return meio.tipo === 'cartao' ? `Cartão ${meio.cartao.slice(0, 4)}...${meio.cartao.slice(-4)}` : 'QR Code';
+  protected descricaoPagamento(venda: VendaFinalizada): string {
+    return venda.meio === 'cartao' ? `Cartão final ${venda.finalCartao}` : 'QR Code';
   }
 
   async finalizarVenda(): Promise<void> {
@@ -125,8 +130,7 @@ export class VendaComponent {
       qtdParcelas: Math.max(1, this.parcelas() || 1),
       // Configuração "Enviar número nota": envia o número do cupom/nota da venda
       numeroNota: this.configuracao.valor.usaNumNota ? this.numeroCupom() : undefined,
-      // Configuração "Enviar itens da venda": a lista de produtos é opcional na API
-      produtos: this.configuracao.valor.enviaItens ? this.produtos() : undefined,
+      produtos: this.produtos(),
     };
 
     // 1. Solicitação (cartão ou QR Code)
@@ -161,7 +165,8 @@ export class VendaComponent {
         valor: dados.valor,
         autorizacao: retorno.autorizacao,
         nsu: retorno.nsu,
-        meio,
+        meio: meio.tipo,
+        finalCartao: meio.tipo === 'cartao' ? meio.cartao.slice(-4) : undefined,
       },
       ...vendas,
     ]);
@@ -171,24 +176,13 @@ export class VendaComponent {
 
   protected async excluirVenda(venda: VendaFinalizada): Promise<void> {
     const prosseguir = await this.dialogos.confirmar(
-      'Esta venda possui transação Convcard.\r\nAo excluir a venda a transação será automaticamente cancelada.\r\nDeseja prosseguir?',
+      'Esta venda possui transação Convcard.\r\nAo excluir a venda a transação será cancelada.\r\nDeseja prosseguir?',
     );
     if (!prosseguir) return;
 
-    const meio = venda.meio;
-    try {
-      const retorno = await this.dialogos.comProgresso('Processando cancelamento...', () =>
-        meio.tipo === 'cartao'
-          ? this.api.solicitarCancelamento({ cartao: meio.cartao, cvv: meio.cvv, valor: venda.valor, autorizacao: venda.autorizacao })
-          : this.api.solicitarCancelamentoQrCode({ qrcode: meio.qrcode, valor: venda.valor, autorizacao: venda.autorizacao }),
-      );
-      await this.transacao.finalizar({ titulo: 'Cancelamento', comprovante: retorno.comprovante, mensagemLoja: retorno.mensagemLoja });
-    } catch (e) {
-      await this.dialogos.mensagemOperador(mensagemErro(e));
-      return;
+    const dados: VendaACancelar = { valor: venda.valor, autorizacao: venda.autorizacao };
+    if (await this.dialogos.abrir(CancelamentoComponent, dados)) {
+      this.vendas.update((vendas) => vendas.filter((v) => v !== venda));
     }
-
-    await this.dialogos.aprovado();
-    this.vendas.update((vendas) => vendas.filter((v) => v !== venda));
   }
 }

@@ -8,8 +8,6 @@
  *  - Enviar dados receita: exibe os campos de receita médica na venda
  *    (opcional; só para estabelecimentos que vendem com receita);
  *  - Enviar número nota: envia o número do cupom/nota na venda;
- *  - Enviar itens da venda: envia a lista de produtos (campo "produtos",
- *    opcional na API). Com NÃO, a compra vai só com valor e parcelas;
  *  - Certificado (.crt, "BEGIN CERTIFICATE") + chave privada (.key,
  *    "BEGIN RSA PRIVATE KEY", sem senha): autenticação com o autorizador (mTLS).
  * Certificado, chave e token da loja são fornecidos pela Convcard.
@@ -50,7 +48,6 @@ export class ConfiguracaoComponent extends TelaBase {
   protected readonly nomeLoja = signal(this.atual.nomeLoja);
   protected readonly usaReceita = signal(this.atual.usaReceita);
   protected readonly usaNumNota = signal(this.atual.usaNumNota);
-  protected readonly enviaItens = signal(this.atual.enviaItens);
   protected readonly caminhoCertificado = signal(this.atual.caminhoCertificado);
   protected readonly caminhoChave = signal(this.atual.caminhoChave);
 
@@ -96,7 +93,6 @@ export class ConfiguracaoComponent extends TelaBase {
       nomeLoja: this.nomeLoja().trim(),
       usaReceita: this.usaReceita(),
       usaNumNota: this.usaNumNota(),
-      enviaItens: this.enviaItens(),
       caminhoCertificado: this.caminhoCertificado(),
       caminhoChave: this.caminhoChave(),
       nomeSoftware: this.nomeSoftware().trim(),

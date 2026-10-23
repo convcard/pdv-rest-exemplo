@@ -62,7 +62,7 @@ O exemplo guarda o comprovante da última transação **confirmada** de cada tip
 | Tipo | Transações |
 | --- | --- |
 | `VENDA` | Compra com cartão e com QR Code |
-| `CANCELAMENTO` | Cancelamento com cartão e com QR Code |
+| `CANCELAMENTO` | Cancelamento (sempre pelo cartão) |
 | `RECEBIMENTO` | Recebimento de fatura e antecipado |
 
 Tabela SQLite `ultima_transacao` (`src/electron/armazenamento.ts`):

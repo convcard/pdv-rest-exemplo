@@ -111,7 +111,6 @@ const HANDLERS = {
   gerarQrCode: convcard.gerarQrCode,
   solicitarCompraQrCode: convcard.solicitarCompraQrCode,
   solicitarCancelamento: convcard.solicitarCancelamento,
-  solicitarCancelamentoQrCode: convcard.solicitarCancelamentoQrCode,
   solicitarRecebimento: convcard.solicitarRecebimento,
   solicitarRecebimentoAntecipado: convcard.solicitarRecebimentoAntecipado,
   confirmarPendente: convcard.confirmarPendente,

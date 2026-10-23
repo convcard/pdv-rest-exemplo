@@ -250,8 +250,10 @@ Mesmo corpo (`MovimentoQrCodeModel`) para os dois:
 }
 ```
 
-Guarde também o `qrcode` junto com a venda: ele identifica a compra num
-[cancelamento futuro](06-cancelamento.md).
+O `qrcode` **não deve ser gravado com a venda**: ele só fica na pendência, que
+é apagada depois da confirmação/desfazimento. O
+[cancelamento](06-cancelamento.md) de uma compra paga com QR Code é feito pelo
+número do cartão.
 
 ## Regras
 

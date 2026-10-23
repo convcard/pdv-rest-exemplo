@@ -14,6 +14,7 @@
 import { Tela, Validacao } from './base';
 import { comProgresso, mensagemOperador, mostrarAprovado, validar } from './comum';
 import { finalizarTransacao } from './dialogo-comprovante';
+import { rotulo } from './icones';
 import { lerValor, mascaraCartao, mascaraNumero, mascaraValor } from './mascaras';
 import { api, mensagemErro, somenteDigitos } from './util';
 
@@ -28,8 +29,8 @@ export function abrirCancelamento(): Promise<void> {
        <label>Autorização:</label><input data-id="autorizacao" class="campo-grande" /><span></span>
      </div>
      <div class="botoes centro">
-       <button data-id="enviar"><img src="imagens/Btn_Finalizar.gif" alt="" />Enviar [F2]</button>
-       <button data-id="cancelar" tabindex="-1"><img src="imagens/Btn_Cancelar.gif" alt="" />Cancelar [ESC]</button>
+       <button data-id="enviar" class="primario">${rotulo('enviar', 'Enviar', 'F2')}</button>
+       <button data-id="cancelar" tabindex="-1">${rotulo('cancelar', 'Cancelar', 'Esc')}</button>
      </div>`,
   );
 

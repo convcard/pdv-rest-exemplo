@@ -15,6 +15,7 @@ import QRCode from 'qrcode';
 import type { DadosCompra, RetornoMovimentoModel } from '../convcard/modelos';
 import { escreverVisor, Tela } from './base';
 import { atencao, comProgresso } from './comum';
+import { icone, rotulo } from './icones';
 import { aguardar, api, ErroTela, mensagemErro } from './util';
 
 export interface CompraQrCodeAprovada {
@@ -31,12 +32,12 @@ export function abrirQrCode(dados: DadosCompra): Promise<CompraQrCodeAprovada> {
   const tela = new Tela(
     { titulo: 'TEF Convcard - QRCode', largura: 460, logo: false },
     `<div data-id="visor" class="visor qrcode">Gerando QRCode...</div>
-     <div class="qrcode-imagem"><img data-id="imagem" src="imagens/convcard.png" alt="QR Code" /></div>
+     <div class="qrcode-imagem"><div data-id="carregando" class="qrcode-carregando">${icone('qrcode')}</div><img data-id="imagem" alt="QR Code" hidden /></div>
      <div data-id="codigo" class="qrcode-codigo"></div>
      <div class="botoes centro">
-       <button data-id="compartilhar" disabled><img src="imagens/logo_whatsapp.png" alt="" />Compartilhar [F2]</button>
-       <button data-id="imprimir" disabled title="A impressão é efetuada somente na impressora padrão do windows."><img src="imagens/print.png" alt="" />Imprimir QR Code [F4]</button>
-       <button data-id="cancelar"><img src="imagens/Btn_Cancelar.gif" alt="" />Cancelar [Esc]</button>
+       <button data-id="compartilhar" disabled>${rotulo('compartilhar', 'Compartilhar', 'F2')}</button>
+       <button data-id="imprimir" disabled title="A impressão é efetuada somente na impressora padrão do windows.">${rotulo('imprimir', 'Imprimir', 'F4')}</button>
+       <button data-id="cancelar">${rotulo('cancelar', 'Cancelar', 'Esc')}</button>
      </div>`,
   );
   const visor = tela.el<HTMLDivElement>('visor');
@@ -81,6 +82,8 @@ export function abrirQrCode(dados: DadosCompra): Promise<CompraQrCodeAprovada> {
 
     qrcodeAtual = qr.qrcode;
     tela.el<HTMLImageElement>('imagem').src = await QRCode.toDataURL(qr.qrcode, { width: 300, margin: 1 });
+    tela.el('imagem').hidden = false;
+    tela.el('carregando').hidden = true;
     tela.el('codigo').textContent = formatarCodigo(qr.qrcode);
     tela.el<HTMLButtonElement>('compartilhar').disabled = false;
     tela.el<HTMLButtonElement>('imprimir').disabled = false;

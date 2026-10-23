@@ -9,6 +9,7 @@
  */
 import { Tela, Validacao } from './base';
 import { atencao, comProgresso, validar } from './comum';
+import { rotulo } from './icones';
 import { mascaraCartao, mascaraNumero } from './mascaras';
 import { api, escapar, mensagemErro, somenteDigitos } from './util';
 
@@ -21,8 +22,8 @@ export function abrirCadastroToken(): Promise<void> {
      </div>
      <div data-id="resultado"></div>
      <div class="botoes centro">
-       <button data-id="enviar"><img src="imagens/Btn_Finalizar.gif" alt="" />Enviar [F2]</button>
-       <button data-id="sair"><img src="imagens/Btn_Cancelar.gif" alt="" />Sair [Esc]</button>
+       <button data-id="enviar" class="primario">${rotulo('enviar', 'Enviar', 'F2')}</button>
+       <button data-id="sair">${rotulo('sair', 'Sair', 'Esc')}</button>
      </div>`,
   );
   mascaraCartao(tela.el('cartao'));

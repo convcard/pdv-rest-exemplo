@@ -27,6 +27,7 @@ import type { FaturaModel } from '../convcard/modelos';
 import { Tela, Validacao } from './base';
 import { atencao, comProgresso, mensagemOperador, mostrarAprovado, validar } from './comum';
 import { finalizarTransacao } from './dialogo-comprovante';
+import { rotulo } from './icones';
 import { lerValor, mascaraCartao, mascaraCpf, mascaraNumero, mascaraValor } from './mascaras';
 import { api, formatarData, formatarValor, mensagemErro, somenteDigitos } from './util';
 import type { FiltroFatura } from '../shared/ipc';
@@ -47,10 +48,9 @@ export function abrirRecebimento(dadosFatura?: DadosFatura): Promise<boolean> {
     { titulo: 'TEF Convcard - Recebimento', largura: 585, logo: false },
     `<div class="cabecalho-recebimento">
        <div class="modos">
-         <button data-id="modo-recebimento" tabindex="-1"><img src="imagens/recebto.png" alt="" />Recebimento [F3]</button>
-         <button data-id="modo-antecipado" tabindex="-1"><img src="imagens/recebto.png" alt="" />Recebimento Antecipado [F4]</button>
+         <button data-id="modo-recebimento" tabindex="-1">${rotulo('recebimento', 'Recebimento', 'F3')}</button>
+         <button data-id="modo-antecipado" tabindex="-1">${rotulo('antecipado', 'Recebimento antecipado', 'F4')}</button>
        </div>
-       <img src="imagens/convcard.png" alt="Convcard" class="logo-lateral" />
      </div>
      <div class="grade-campos" style="grid-template-columns: 150px 1fr 150px">
        <div class="linha-grade" data-id="linha-tipo">
@@ -71,9 +71,9 @@ export function abrirRecebimento(dadosFatura?: DadosFatura): Promise<boolean> {
        </div>
      </div>
      <div class="botoes direita">
-       <button data-id="finalizar"><img src="imagens/Btn_Finalizar.gif" alt="" />Finalizar [F2]</button>
-       <button data-id="limpar"><img src="imagens/Btn_Limpar.gif" alt="" />Limpar [F5]</button>
-       <button data-id="sair"><img src="imagens/Btn_Cancelar.gif" alt="" />Sair [Esc]</button>
+       <button data-id="finalizar" class="primario">${rotulo('finalizar', 'Finalizar', 'F2')}</button>
+       <button data-id="limpar">${rotulo('limpar', 'Limpar', 'F5')}</button>
+       <button data-id="sair">${rotulo('sair', 'Sair', 'Esc')}</button>
      </div>`,
   );
 

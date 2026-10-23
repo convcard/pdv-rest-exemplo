@@ -4,6 +4,10 @@ PDV de exemplo em **Electron + TypeScript + Vite** (Electron Forge) que demonstr
 integração com o **Autorizador Convcard** no fluxo de PDV. O código está bem
 comentado e funciona como uma segunda documentação.
 
+O exemplo usa somente o **ambiente de homologação**
+(`https://aut-h.convcard.com.br/autorizador`, fixo em `src/convcard/cliente.ts`).
+A credencial de produção é enviada pela Convcard após a homologação ser aprovada.
+
 Documentação oficial da API (swagger):
 https://aut-h.convcard.com.br/autorizador/swagger-ui/index.html
 
@@ -18,7 +22,6 @@ Na primeira execução abre a tela de configuração. Informe:
 
 | Campo                          | Descrição                                                              |
 | ------------------------------ | ---------------------------------------------------------------------- |
-| Ambiente                       | Homologação (`aut-h.convcard.com.br`) ou Produção (`aut.convcard.com`) |
 | Token da loja                  | Token (UUID) fornecido pela Convcard, enviado como `identificadorLoja` |
 | Enviar dados receita           | Exibe os campos de receita médica na venda                             |
 | Enviar número nota             | Envia o número do cupom/nota na venda                                  |
@@ -40,6 +43,7 @@ src/
   preload.ts       -> expõe window.convcard para as telas
   shared/ipc.ts    -> contrato entre telas e main
   telas/           -> uma tela por arquivo (veja a tabela abaixo)
+  telas/icones.ts  -> ícones (biblioteca Lucide, empacotada no app)
 ```
 
 ## Telas

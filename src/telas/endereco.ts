@@ -13,6 +13,7 @@
 import type { EnderecoModel } from '../convcard/modelos';
 import { Tela, Validacao } from './base';
 import { comProgresso, atencao, validar } from './comum';
+import { icone, rotulo } from './icones';
 import { maiusculas, mascaraCep } from './mascaras';
 import { api, escapar, mensagemErro, opcoesUf, somenteDigitos } from './util';
 
@@ -23,7 +24,7 @@ export function abrirAtualizacaoEndereco(cartao: string, endereco: EnderecoModel
     `<div class="faixa-titulo">Atualização do endereço postal<br />Favor confirmar os dados abaixo com o usuário do cartão</div>
      <div class="grade-campos" style="grid-template-columns: 91px 1fr 82px 1fr">
        <label>CEP:</label>
-       <span class="linha"><input data-id="cep" value="${escapar(endereco.cep)}" /><button data-id="lupa" class="icone" tabindex="-1"><img src="imagens/lupa.gif" alt="Buscar" /></button></span>
+       <span class="linha"><input data-id="cep" value="${escapar(endereco.cep)}" /><button data-id="lupa" class="so-icone" tabindex="-1" title="Buscar CEP">${icone('pesquisar')}</button></span>
        <span></span><span></span>
        <label>Logradouro:</label><input data-id="logradouro" class="span3" value="${escapar(endereco.endereco)}" />
        <label>Complemento:</label><input data-id="complemento" value="${escapar(endereco.complemento)}" />
@@ -32,7 +33,7 @@ export function abrirAtualizacaoEndereco(cartao: string, endereco: EnderecoModel
        <label>Cidade:</label><input data-id="cidade" value="${escapar(endereco.cidade)}" />
        <label>Estado:</label><select data-id="estado">${opcoesUf()}</select>
      </div>
-     <div class="botoes centro"><button data-id="confirmar"><img src="imagens/Btn_Ok.gif" alt="" />Confirmar [F2]</button></div>`,
+     <div class="botoes centro"><button data-id="confirmar" class="primario">${rotulo('confirmar', 'Confirmar', 'F2')}</button></div>`,
   );
 
   tela.el<HTMLSelectElement>('estado').value = endereco.estado ?? '';

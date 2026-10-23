@@ -3,7 +3,7 @@
  *
  * Pontos importantes da comunicação:
  *  1. Autenticação por certificado de cliente (mTLS): a Convcard fornece um
- *     arquivo .p12 (PKCS#12) + senha para cada ambiente. O certificado é
+ *     arquivo .p12 (PKCS#12) + senha. O certificado é
  *     enviado no handshake TLS; não existe header de token/Authorization.
  *  2. Corpo sempre em JSON (Content-Type e Accept: application/json),
  *     inclusive nos métodos PUT e DELETE.
@@ -14,14 +14,15 @@
  */
 import https from 'node:https';
 import fs from 'node:fs';
-import type { Ambiente, Configuracao, LogIntegracao } from '../shared/ipc';
+import type { Configuracao, LogIntegracao } from '../shared/ipc';
 import type { ErrorModel } from './modelos';
 
-/** URLs de cada ambiente (as mesmas da descrição do swagger). */
-const URL_AMBIENTE: Record<Ambiente, string> = {
-  HOMOLOGACAO: 'https://aut-h.convcard.com.br/autorizador',
-  PRODUCAO: 'https://aut.convcard.com/autorizador',
-};
+/**
+ * URL do ambiente de homologação (a mesma da descrição do swagger).
+ * Este exemplo usa somente homologação. A credencial de produção só é
+ * enviada pela Convcard depois que a homologação é aprovada.
+ */
+const URL_HOMOLOGACAO = 'https://aut-h.convcard.com.br/autorizador';
 
 /**
  * Tempo máximo de espera pela resposta. O pooling do QR Code
@@ -109,7 +110,7 @@ function executar(
     );
   }
 
-  const url = URL_AMBIENTE[config.ambiente] + caminho;
+  const url = URL_HOMOLOGACAO + caminho;
   const json = JSON.stringify(corpo);
   const inicio = Date.now();
   const log: LogIntegracao = {
@@ -219,10 +220,10 @@ function montarErro(status: number, resposta: unknown, texto: string): ConvcardE
 
   // Certificado recusado: o proxy (nginx) responde 400 em HTML com
   // "SSL certificate error". 401 também indica problema de autenticação.
-  // Causas comuns: certificado de outro ambiente, expirado ou revogado.
+  // Causas comuns: certificado de produção, expirado ou revogado.
   if ((status === 401 && !erro.message) || /SSL certificate/i.test(texto)) {
     return new ConvcardErro(
-      'Falha de autenticação com a Convcard. Verifique o certificado e o ambiente configurados.',
+      'Falha de autenticação com a Convcard. Verifique o certificado configurado.',
       status,
     );
   }

@@ -7,6 +7,7 @@
  */
 import { Tela, Validacao } from './base';
 import { atencao, comProgresso, validar } from './comum';
+import { rotulo } from './icones';
 import { mascaraCartao, mascaraCpf, mascaraNumero } from './mascaras';
 import { api, mensagemErro, somenteDigitos } from './util';
 import type { FiltroFatura } from '../shared/ipc';
@@ -24,8 +25,8 @@ export function abrirEmissaoFatura(): Promise<void> {
        <input data-id="filtro" class="num" placeholder="Informe o número" autocomplete="off" />
      </div>
      <div class="botoes centro">
-       <button data-id="confirmar"><img src="imagens/Btn_Finalizar.gif" alt="" />Confirmar [F2]</button>
-       <button data-id="sair"><img src="imagens/Btn_Cancelar.gif" alt="" />Sair [Esc]</button>
+       <button data-id="confirmar" class="primario">${rotulo('fatura', 'Emitir', 'F2')}</button>
+       <button data-id="sair">${rotulo('sair', 'Sair', 'Esc')}</button>
      </div>`,
   );
 

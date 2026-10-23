@@ -10,6 +10,7 @@
 import type { SaldoModel } from '../convcard/modelos';
 import { Tela, Validacao } from './base';
 import { atencao, comProgresso, validar } from './comum';
+import { rotulo } from './icones';
 import { mascaraCartao } from './mascaras';
 import { abrirRecebimento } from './recebimento';
 import { api, formatarData, formatarValor, mensagemErro, somenteDigitos } from './util';
@@ -19,32 +20,35 @@ export function abrirConsultaSaldo(): Promise<void> {
     `<label>${rotulo}</label><input data-id="${id}" class="${classe}" readonly tabindex="-1" />`;
 
   const tela = new Tela(
-    { titulo: 'TEF Convcard - Consulta', largura: 530, logo: false },
+    { titulo: 'TEF Convcard - Consulta', largura: 820, logo: false },
     `<div class="cabecalho-consulta">
        <div>
          <div class="linha"><label>Cartão:</label><input data-id="cartao" class="campo-grande" placeholder="Informe aqui o número do cartão" autocomplete="off" /></div>
          <div class="dica-enter">Pressione ENTER para pesquisar</div>
        </div>
-       <img src="imagens/convcard.png" alt="Convcard" class="logo-lateral" />
      </div>
-     <div class="grade-campos leitura" style="grid-template-columns: 170px 1fr 1fr">
-       <div class="secao">Dados do cartão:</div>
-       <label>Usuário do cartão:</label><input data-id="usuario" class="span2" readonly tabindex="-1" />
-       <label>Situação do cartão:</label><input data-id="situacao" class="span2" readonly tabindex="-1" />
-       ${campo('Limite de crédito total:', 'limite')}<span></span>
-       ${campo('Saldo utilizado:', 'utilizado')}<span></span>
-       ${campo('Saldo disponível:', 'disponivel')}<span></span>
-       <div class="secao">Dados da última fatura:</div>
-       ${campo('Vencimento:', 'vencimento')}<span data-id="status-fatura" class="status-fatura"></span>
-       ${campo('Número da fatura:', 'numero-fatura')}<span></span>
-       ${campo('NSU da fatura:', 'nsu-fatura')}<span></span>
-       ${campo('Valor mínimo:', 'valor-minimo')}<span></span>
-       ${campo('Valor total:', 'valor-total')}<span></span>
+     <div class="consulta-colunas">
+       <div class="grade-campos" style="grid-template-columns: 150px 1fr">
+         <div class="secao">Dados do cartão</div>
+         <label>Usuário do cartão:</label><input data-id="usuario" readonly tabindex="-1" />
+         <label>Situação do cartão:</label><input data-id="situacao" readonly tabindex="-1" />
+         ${campo('Limite de crédito total:', 'limite')}
+         ${campo('Saldo utilizado:', 'utilizado')}
+         ${campo('Saldo disponível:', 'disponivel')}
+       </div>
+       <div class="grade-campos" style="grid-template-columns: 130px 1fr">
+         <div class="secao">Dados da última fatura <span data-id="status-fatura" class="status-fatura"></span></div>
+         ${campo('Vencimento:', 'vencimento')}
+         ${campo('Número da fatura:', 'numero-fatura')}
+         ${campo('NSU da fatura:', 'nsu-fatura')}
+         ${campo('Valor mínimo:', 'valor-minimo')}
+         ${campo('Valor total:', 'valor-total')}
+       </div>
      </div>
      <div class="botoes direita">
-       <button data-id="limpar"><img src="imagens/Btn_Limpar.gif" alt="" />Limpar [F5]</button>
-       <button data-id="recebimentos"><img src="imagens/Btn_Finalizar.gif" alt="" />Recebimentos [F6]</button>
-       <button data-id="sair"><img src="imagens/Btn_Cancelar.gif" alt="" />Sair [Esc]</button>
+       <button data-id="limpar">${rotulo('limpar', 'Limpar', 'F5')}</button>
+       <button data-id="recebimentos" class="primario">${rotulo('recebimentos', 'Recebimentos', 'F6')}</button>
+       <button data-id="sair">${rotulo('sair', 'Sair', 'Esc')}</button>
      </div>`,
   );
 

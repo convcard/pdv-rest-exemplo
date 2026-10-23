@@ -7,6 +7,7 @@
  *    ou em impressora não fiscal, na quantidade de vias configurada).
  */
 import { Tela, type Validacao } from './base';
+import { rotulo } from './icones';
 import { escapar, linhasComprovante } from './util';
 
 /** "Mensagem Operador": usado para mensagens da Convcard e "000 - APROVADO". */
@@ -14,7 +15,7 @@ export function mensagemOperador(mensagem: string, segundos = 5): Promise<void> 
   const tela = new Tela(
     { titulo: 'Mensagem Operador', largura: 580, logo: false, rodape: false },
     `<textarea class="mensagem-operador" readonly>${escapar(mensagem)}</textarea>
-     <div class="botoes centro"><button data-id="ok">OK</button></div>`,
+     <div class="botoes centro"><button data-id="ok" class="primario">OK</button></div>`,
   );
   return new Promise((resolve) => {
     let restantes = segundos;
@@ -69,7 +70,7 @@ export function confirmar(mensagem: string, titulo = 'Confirmação'): Promise<b
     { titulo, largura: 460, logo: false, rodape: false },
     `<div class="mensagem">${escapar(mensagem)}</div>
      <div class="botoes centro">
-       <button data-id="sim">Sim</button>
+       <button data-id="sim" class="primario">Sim</button>
        <button data-id="nao">Não</button>
      </div>`,
   );
@@ -128,8 +129,8 @@ export function imprimirComprovante(comprovante: string | undefined, titulo: str
     { titulo: `Impressora (simulada) - ${titulo}`, largura: 420, logo: false, rodape: false },
     `<pre class="comprovante">${escapar(linhas.length ? linhas.join('\n') : '(transação sem comprovante)')}</pre>
      <div class="botoes centro">
-       <button data-id="impresso"><img src="imagens/Btn_Ok.gif" alt="" />Impresso [F2]</button>
-       <button data-id="falha"><img src="imagens/Btn_Cancelar.gif" alt="" />Falha na impressão [F3]</button>
+       <button data-id="impresso" class="primario">${rotulo('imprimir', 'Impresso', 'F2')}</button>
+       <button data-id="falha" class="perigo">${rotulo('falha', 'Falha na impressão', 'F3')}</button>
      </div>`,
   );
   return new Promise((resolve) => {

@@ -40,7 +40,6 @@ function remover(nome: string): void {
 // ---------------------------------------------------------------------------
 
 const CONFIG_PADRAO: Configuracao = {
-  ambiente: 'HOMOLOGACAO',
   caminhoCertificado: '',
   senhaCertificado: '',
   identificadorLoja: '',

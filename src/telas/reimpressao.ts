@@ -8,6 +8,7 @@
 import type { TipoReimpressao } from '../shared/ipc';
 import { Tela, Validacao } from './base';
 import { atencao, confirmar, imprimirComprovante, mostrarAprovado, validar } from './comum';
+import { rotulo } from './icones';
 import { api, mensagemErro } from './util';
 
 const OPCOES: { tipo: TipoReimpressao; rotulo: string; pergunta: string; progresso: string }[] = [
@@ -26,8 +27,8 @@ export function abrirReimpressao(): Promise<void> {
          .join('')}
      </fieldset>
      <div class="botoes centro">
-       <button data-id="enviar">Enviar [F2]</button>
-       <button data-id="cancelar">Cancelar [Esc]</button>
+       <button data-id="enviar" class="primario">${rotulo('imprimir', 'Reimprimir', 'F2')}</button>
+       <button data-id="cancelar">${rotulo('cancelar', 'Cancelar', 'Esc')}</button>
      </div>`,
   );
 

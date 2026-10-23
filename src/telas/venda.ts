@@ -18,6 +18,7 @@ import type { DadosCompra, ProdutoModel, TipoProduto } from '../convcard/modelos
 import { atencao, comProgresso, confirmar, mensagemOperador, mostrarAprovado } from './comum';
 import { abrirVendaConvcard, type MeioPagamento } from './dialogo-cartao';
 import { finalizarTransacao } from './dialogo-comprovante';
+import { icone, rotulo } from './icones';
 import { abrirFuncoesConvcard } from './funcoes';
 import { $, api, arredondar, config, escapar, formatarData, formatarMoeda, mensagemErro } from './util';
 
@@ -90,9 +91,9 @@ function renderizarItens(): void {
         <td>${p.codigoBarras}</td><td>${escapar(p.descricao)}</td><td>${p.tipo}</td>
         <td class="num">${p.quantidade}</td><td class="num">${formatarMoeda(p.valorUnitario)}</td>
         <td class="num">${p.percentualDesconto}</td><td class="num">${formatarMoeda(p.valor)}</td>
-        <td><button data-remover="${indice}">x</button></td></tr>`;
+        <td><button data-remover="${indice}" class="so-icone" title="Remover item">${icone('remover')}</button></td></tr>`;
     })
-    .join('');
+    .join('') || '<tr><td colspan="8" class="vazio">Clique nos produtos acima para adicioná-los à venda.</td></tr>';
   $('venda-total').textContent = formatarMoeda(total());
   $('venda-cupom').textContent = String(numeroCupom);
 }
@@ -105,9 +106,9 @@ function renderizarVendas(): void {
       (v, indice) => `<tr>
         <td>${v.numero}</td><td>${formatarData(v.data)}</td><td>${descricaoMeio(v.meio)}</td>
         <td class="num">${formatarMoeda(v.valor)}</td><td class="num">${v.autorizacao}</td><td class="num">${v.nsu ?? ''}</td>
-        <td><button data-excluir="${indice}">Excluir venda</button></td></tr>`,
+        <td><button data-excluir="${indice}" class="perigo pequeno">${rotulo('cancelamento', 'Excluir venda')}</button></td></tr>`,
     )
-    .join('');
+    .join('') || '<tr><td colspan="7" class="vazio">Nenhuma venda finalizada.</td></tr>';
 }
 
 function adicionar(item: ItemCatalogo): void {
@@ -208,20 +209,21 @@ export function iniciarVenda(): void {
   const catalogo = $<HTMLDivElement>('catalogo');
   for (const item of CATALOGO) {
     const botao = document.createElement('button');
-    botao.textContent = `+ ${item.descricao} (${formatarMoeda(item.valorUnitario)})`;
+    botao.className = 'produto';
+    botao.innerHTML = `${icone('adicionar')}<span class="produto-nome">${escapar(item.descricao)}</span><span class="produto-preco">${formatarMoeda(item.valorUnitario)}</span>`;
     botao.addEventListener('click', () => adicionar(item));
     catalogo.appendChild(botao);
   }
 
   $('itens-venda').addEventListener('click', (e) => {
-    const indice = (e.target as HTMLElement).dataset.remover;
+    const indice = (e.target as Element).closest<HTMLElement>('[data-remover]')?.dataset.remover;
     if (indice !== undefined) {
       itens.splice(Number(indice), 1);
       renderizarItens();
     }
   });
   $('vendas-finalizadas').addEventListener('click', (e) => {
-    const indice = (e.target as HTMLElement).dataset.excluir;
+    const indice = (e.target as Element).closest<HTMLElement>('[data-excluir]')?.dataset.excluir;
     if (indice !== undefined) void excluirVenda(Number(indice));
   });
 

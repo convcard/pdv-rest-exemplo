@@ -2,12 +2,11 @@
  * Base de todas as telas "TEF Convcard".
  *
  * Cada tela é um <dialog> modal criado ao abrir e removido ao fechar, com:
- *  - barra de título;
- *  - logo Convcard no topo (opcional);
- *  - rodapé padrão: nome da loja e, em
- *    homologação, a faixa vermelha "AMBIENTE HOMOLOGAÇÃO";
+ *  - cabeçalho com logo Convcard (opcional) e título;
+ *  - rodapé padrão: nome da loja e o selo "Homologação";
  *  - atalhos de teclado (F2, F3, Esc...).
  */
+import { icone } from './icones';
 import { config, escapar } from './util';
 
 export interface OpcoesTela {
@@ -15,16 +14,31 @@ export interface OpcoesTela {
   /** Largura em px */
   largura: number;
   logo?: boolean;
-  /** Rodapé com loja/ambiente (padrão true; os diálogos genéricos não têm) */
+  /** Rodapé com loja e ambiente (padrão true; os diálogos genéricos não têm) */
   rodape?: boolean;
 }
 
 /** Rodapé padrão das telas Convcard. */
 function rodapeHtml(): string {
-  const { nomeLoja, ambiente } = config();
-  const loja = nomeLoja ? `<div class="rodape-loja">${escapar(nomeLoja)}</div>` : '';
-  const homologacao = ambiente === 'HOMOLOGACAO' ? '<div class="rodape-homologacao">AMBIENTE HOMOLOGAÇÃO</div>' : '';
-  return `<div class="rodape">${loja}${homologacao}</div>`;
+  const { nomeLoja } = config();
+  return `<footer class="tela-rodape">
+      <span class="rodape-loja">${nomeLoja ? `${icone('loja')}${escapar(nomeLoja)}` : ''}</span>
+      <span class="selo-homologacao">${icone('homologacao')}Homologação</span>
+    </footer>`;
+}
+
+/** "TEF Convcard - Venda" vira sobretítulo "TEF Convcard" + título "Venda". */
+function cabecalhoHtml(opcoes: OpcoesTela): string {
+  const [sobretitulo, titulo] = opcoes.titulo.includes(' - ')
+    ? opcoes.titulo.split(' - ', 2)
+    : ['', opcoes.titulo];
+  return `<header class="tela-cabecalho">
+      ${opcoes.logo === false ? '' : '<img class="tela-logo" src="imagens/convcard.png" alt="Convcard" />'}
+      <div class="tela-titulos">
+        ${sobretitulo ? `<small>${escapar(sobretitulo)}</small>` : ''}
+        <h2>${escapar(titulo)}</h2>
+      </div>
+    </header>`;
 }
 
 export class Tela {
@@ -39,8 +53,7 @@ export class Tela {
     this.dlg.style.width = `${opcoes.largura}px`;
     this.dlg.tabIndex = -1;
     this.dlg.innerHTML = `
-      <div class="tela-titulo">${escapar(opcoes.titulo)}</div>
-      ${opcoes.logo === false ? '' : '<div class="tela-logo"><img src="imagens/convcard.png" alt="Convcard" /></div>'}
+      ${cabecalhoHtml(opcoes)}
       <div class="tela-corpo">${corpoHtml}</div>
       ${opcoes.rodape === false ? '' : rodapeHtml()}`;
     document.body.appendChild(this.dlg);

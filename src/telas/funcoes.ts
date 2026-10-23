@@ -11,6 +11,7 @@ import { abrirEmissaoFatura } from './emissao-fatura';
 import { abrirRecebimento } from './recebimento';
 import { abrirReimpressao } from './reimpressao';
 import { abrirConsultaSaldo } from './saldo';
+import { type NomeIcone, rotulo } from './icones';
 import { abrirCadastroToken } from './token';
 import { mensagemErro } from './util';
 
@@ -18,26 +19,26 @@ interface OpcaoMenu {
   id: string;
   rotulo: string;
   tecla: string;
-  icone: string;
+  icone: NomeIcone;
   acao: () => Promise<unknown>;
 }
 
 export function abrirFuncoesConvcard(): void {
   const opcoes: OpcaoMenu[] = [
-    { id: 'cancelamento', rotulo: 'Cancelamento de venda [F2]', tecla: 'F2', icone: 'card_cancel.png', acao: abrirCancelamento },
-    { id: 'recebimentos', rotulo: 'Recebimentos [F3]', tecla: 'F3', icone: 'card_receipt.png', acao: () => abrirRecebimento() },
-    { id: 'reimpressao', rotulo: 'Reimpressão do último movimento [F4]', tecla: 'F4', icone: 'card_print.png', acao: abrirReimpressao },
-    { id: 'saldo', rotulo: 'Consulta saldo [F5]', tecla: 'F5', icone: 'card_search.png', acao: abrirConsultaSaldo },
-    { id: 'fatura', rotulo: 'Emissão de fatura [F6]', tecla: 'F6', icone: 'card_invoice.png', acao: abrirEmissaoFatura },
-    { id: 'token', rotulo: 'Cadastro de token [F7]', tecla: 'F7', icone: 'card_setting.png', acao: abrirCadastroToken },
-    { id: 'configuracoes', rotulo: 'Configurações [F12]', tecla: 'F12', icone: 'card_setting.png', acao: abrirConfiguracao },
+    { id: 'cancelamento', rotulo: 'Cancelamento de venda', tecla: 'F2', icone: 'cancelamento', acao: abrirCancelamento },
+    { id: 'recebimentos', rotulo: 'Recebimentos', tecla: 'F3', icone: 'recebimentos', acao: () => abrirRecebimento() },
+    { id: 'reimpressao', rotulo: 'Reimpressão do último movimento', tecla: 'F4', icone: 'imprimir', acao: abrirReimpressao },
+    { id: 'saldo', rotulo: 'Consulta saldo', tecla: 'F5', icone: 'pesquisar', acao: abrirConsultaSaldo },
+    { id: 'fatura', rotulo: 'Emissão de fatura', tecla: 'F6', icone: 'fatura', acao: abrirEmissaoFatura },
+    { id: 'token', rotulo: 'Cadastro de token', tecla: 'F7', icone: 'token', acao: abrirCadastroToken },
+    { id: 'configuracoes', rotulo: 'Configurações', tecla: 'F12', icone: 'configuracoes', acao: abrirConfiguracao },
   ];
 
   const tela = new Tela(
-    { titulo: 'TEF Convcard - Funções administrativas', largura: 350 },
+    { titulo: 'TEF Convcard - Funções administrativas', largura: 400 },
     `<div class="menu">
-       ${opcoes.map((o) => `<button data-id="${o.id}"><img src="imagens/${o.icone}" alt="" />${o.rotulo}</button>`).join('')}
-       <button data-id="sair"><img src="imagens/card_cancel.png" alt="" />Sair [Esc]</button>
+       ${opcoes.map((o) => `<button data-id="${o.id}">${rotulo(o.icone, o.rotulo, o.tecla)}</button>`).join('')}
+       <button data-id="sair">${rotulo('sair', 'Sair', 'Esc')}</button>
      </div>`,
   );
 

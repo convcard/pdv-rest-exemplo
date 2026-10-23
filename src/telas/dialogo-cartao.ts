@@ -20,6 +20,7 @@ import type { DadosCompra, RetornoMovimentoModel } from '../convcard/modelos';
 import { escreverVisor, Tela, Validacao } from './base';
 import { validar } from './comum';
 import { abrirQrCode } from './dialogo-qrcode';
+import { rotulo } from './icones';
 import { mascaraCartao, mascaraNumero, maiusculas } from './mascaras';
 import { aguardar, api, config, ErroTela, formatarValor, mensagemErro, opcoesUf, somenteDigitos } from './util';
 
@@ -37,7 +38,7 @@ export interface CompraAprovada {
 export function abrirVendaConvcard(dados: DadosCompra): Promise<CompraAprovada> {
   const usaReceita = config().usaReceita;
   const tela = new Tela(
-    { titulo: 'TEF Convcard - Venda', largura: 435 },
+    { titulo: 'TEF Convcard - Venda', largura: 480 },
     `<div class="faixa-titulo esquerda">CARTÃO: CONVCARD</div>
      <div class="valor-parcelas">
        <div><label>Valor:</label><input class="valor-grande" readonly tabindex="-1" value="${formatarValor(dados.valor)}" /></div>
@@ -50,9 +51,9 @@ export function abrirVendaConvcard(dados: DadosCompra): Promise<CompraAprovada> 
      </div>
      ${
        usaReceita
-         ? `<div class="grade-campos" style="grid-template-columns: 117px 1fr 40px 70px">
+         ? `<div class="grade-campos" style="grid-template-columns: 117px 1fr 36px 90px">
               <label class="checkbox"><input data-id="com-receita" type="checkbox" />Com receita?</label>
-              <span class="linha"><label>Data receita:</label><input data-id="data-receita" type="date" disabled /></span><span></span><span></span>
+              <span class="linha span3"><label>Data receita:</label><input data-id="data-receita" type="date" disabled /></span>
               <label>CRM:</label><input data-id="crm" disabled />
               <label>UF:</label><select data-id="uf" disabled>${opcoesUf()}</select>
             </div>`
@@ -60,9 +61,9 @@ export function abrirVendaConvcard(dados: DadosCompra): Promise<CompraAprovada> 
      }
      <div data-id="visor" class="visor info"></div>
      <div class="botoes centro">
-       <button data-id="enviar"><img src="imagens/Btn_Finalizar.gif" alt="" />Enviar [F2]</button>
-       <button data-id="qrcode" tabindex="-1"><img src="imagens/Btn_Consulta.gif" alt="" />QrCode [F3]</button>
-       <button data-id="cancelar" tabindex="-1"><img src="imagens/Btn_Cancelar.gif" alt="" />Cancelar [ESC]</button>
+       <button data-id="enviar" class="primario">${rotulo('enviar', 'Enviar', 'F2')}</button>
+       <button data-id="qrcode" tabindex="-1">${rotulo('qrcode', 'QR Code', 'F3')}</button>
+       <button data-id="cancelar" tabindex="-1">${rotulo('cancelar', 'Cancelar', 'Esc')}</button>
      </div>`,
   );
 

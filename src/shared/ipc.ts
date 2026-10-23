@@ -26,13 +26,10 @@ import type {
   ValidarConfiguracaoOutputModel,
 } from '../convcard/modelos';
 
-export type Ambiente = 'HOMOLOGACAO' | 'PRODUCAO';
-
 /**
  * Configuração da integração, salva em disco pelo main (config.json).
  */
 export interface Configuracao {
-  ambiente: Ambiente;
   /** Caminho do certificado .p12 fornecido pela Convcard */
   caminhoCertificado: string;
   senhaCertificado: string;

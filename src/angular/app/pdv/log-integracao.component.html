@@ -1,6 +1,5 @@
 <div class="log-topo">
   <strong><app-icone nome="log" />Log da integração</strong>
-  <button class="pequeno" (click)="void log.limpar()"><app-icone nome="limpar" />Limpar</button>
 </div>
 
 <div class="log-itens">
@@ -17,7 +16,12 @@
         <span class="metodo" [class]="'metodo-' + item.metodo.toLowerCase()">{{ item.metodo }}</span>
         <span class="caminho">{{ caminho(item) }}</span>
         <span class="status">{{ item.status ?? 'erro' }}</span>
-        <span class="tempo">{{ item.data | date: 'dd/MM HH:mm:ss' }} · {{ item.duracaoMs }}ms</span>
+        <span class="tempo">
+          @if (nst(item); as n) {
+            <span class="nst">NST {{ n }}</span> ·
+          }
+          {{ item.data | date: 'dd/MM HH:mm:ss' }} · {{ item.duracaoMs }}ms
+        </span>
       </summary>
       <pre>URL: {{ item.url }}
 

@@ -14,7 +14,8 @@
  *                         (para a "Reimpressão do último movimento")
  *  - execucao:            uma linha por abertura do app (sequencial de execuções)
  *  - log_integracao:      requisições ao autorizador (já mascaradas), com a
- *                         execução que as fez (sem limite; o "Limpar" do painel apaga)
+ *                         execução que as fez. Nunca é apagado: a ideia é manter
+ *                         o máximo de informação para diagnóstico
  *
  * Número do cartão, CVV e QR Code não são gravados no banco. A única exceção é
  * a transacao_pendente: ela precisa do movimento completo para desfazer a
@@ -333,11 +334,6 @@ export function listarLogIntegracao(): LogIntegracao[] {
     erro: l.erro ?? undefined,
     duracaoMs: l.duracao_ms ?? undefined,
   }));
-}
-
-export function limparLogIntegracao(): void {
-  db().prepare('DELETE FROM log_integracao').run();
-  console.info('[BANCO] Log da integração apagado');
 }
 
 function paraJson(valor: unknown): string | null {

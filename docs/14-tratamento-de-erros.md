@@ -102,13 +102,13 @@ suporte Convcard), **mascarando dados sensíveis**:
 A máscara (`src/electron/mascara.ts`) percorre o objeto inteiro, inclusive
 listas e objetos aninhados.
 
-O exemplo grava esse log no banco (tabela `log_integracao`, sem limite) junto
+O exemplo grava esse log no banco (tabela `log_integracao`, nunca apagada) junto
 com o número da **execução** do PDV que fez a requisição (tabela `execucao`,
 uma linha por abertura do app), e também no arquivo de log.
 
 No painel "Log da integração" aparecem todos os registros, inclusive de
 execuções anteriores, com um separador a cada execução ("Execução 3 · aberta
-em ..."). O main avisa a tela a cada novo registro e a tela, ao abrir, pede a
+em ...") e o NST de cada requisição. O main avisa a tela a cada novo registro e a tela, ao abrir, pede a
 lista; assim aparece até o que aconteceu antes de ela carregar (como o
 desfazimento de uma pendência ao iniciar).
 
@@ -118,7 +118,7 @@ desfazimento de uma pendência ao iniciar).
 abertura do app começa com `===== Execução N =====` e as linhas trazem
 `[exec N]`, o mesmo número do painel. Pastas
 (Windows: `%APPDATA%\PDV Convcard Exemplo\logs`; Linux:
-`~/.config/PDV Convcard Exemplo/logs`); os arquivos ficam 30 dias:
+`~/.config/PDV Convcard Exemplo/logs`). O app não apaga nenhum arquivo de log:
 
 ```
 ============================== Execução 3 ==============================

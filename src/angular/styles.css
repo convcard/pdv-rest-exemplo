@@ -530,17 +530,6 @@ td.vazio {
   border-bottom: 1px solid #16304d;
 }
 
-.log-topo button {
-  background: #16304d;
-  border-color: #374151;
-  color: #e5e7eb;
-}
-
-.log-topo button:hover:not(:disabled) {
-  background: #374151;
-  border-color: #4b5563;
-}
-
 .log-itens {
   flex: 1;
   overflow: auto;
@@ -632,6 +621,11 @@ td.vazio {
   grid-area: tempo;
   color: #6b7280;
   font-size: 11px;
+}
+
+.tempo .nst {
+  color: #93c5fd;
+  font-weight: 700;
 }
 
 .status {

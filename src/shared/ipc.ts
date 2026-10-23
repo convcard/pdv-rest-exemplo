@@ -183,7 +183,6 @@ export interface ConvcardApi {
   // Log da integração (painel da tela)
   /** Todos os registros gravados no banco, mais recentes primeiro */
   obterLogs(): Promise<LogIntegracao[]>;
-  limparLogs(): Promise<void>;
   /** Recebe cada nova requisição feita ao autorizador */
   aoRegistrarLog(callback: (log: LogIntegracao) => void): void;
 }
@@ -212,7 +211,6 @@ export const OPERACOES = [
   'atualizarEndereco',
   'cadastrarToken',
   'obterLogs',
-  'limparLogs',
 ] as const satisfies readonly Exclude<keyof ConvcardApi, 'aoRegistrarLog'>[];
 
 export type Operacao = (typeof OPERACOES)[number];

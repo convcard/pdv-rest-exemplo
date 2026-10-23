@@ -165,7 +165,7 @@ schema e reaplicar os PRAGMAs a cada operação.
 | `transacao_pendente` | Transação aprovada aguardando confirmação/desfazimento (no máximo uma). Único lugar com cartão/QR Code: registro inteiro criptografado (`cripto.ts`) e apagado após o uso |
 | `ultima_transacao` | Último comprovante confirmado de cada tipo (reimpressão) |
 | `execucao` | Uma linha por abertura do app: o número da execução (1, 2, 3...) |
-| `log_integracao` | Cada requisição ao autorizador (já mascarada) com a execução que a fez. Sem limite; o "Limpar" do painel apaga |
+| `log_integracao` | Cada requisição ao autorizador (já mascarada) com a execução que a fez. Nunca é apagado |
 
 ## Como adaptar ao seu PDV
 

@@ -17,6 +17,11 @@ export class LogIntegracaoComponent {
     return item.status !== undefined && item.status >= 200 && item.status < 300;
   }
 
+  /** NST da requisição (todo corpo enviado ao autorizador tem o campo "nst"). */
+  protected nst(item: LogIntegracao): number | undefined {
+    return (item.requisicao as { nst?: number } | undefined)?.nst;
+  }
+
   protected caminho(item: LogIntegracao): string {
     return new URL(item.url).pathname.replace('/autorizador', '');
   }

@@ -18,7 +18,6 @@ import started from 'electron-squirrel-startup';
 import {
   fecharBanco,
   iniciarExecucao,
-  limparLogIntegracao,
   listarLogIntegracao,
   obterConfiguracao,
   salvarConfiguracao,
@@ -133,10 +132,6 @@ async function obterLogs(): Promise<LogIntegracao[]> {
   return listarLogIntegracao();
 }
 
-async function limparLogs(): Promise<void> {
-  limparLogIntegracao();
-}
-
 /**
  * Função do main que atende cada operação da ConvcardApi. O "satisfies"
  * garante em tempo de compilação que os parâmetros e retornos batem com o
@@ -163,7 +158,6 @@ const HANDLERS = {
   confirmarPendente: convcard.confirmarPendente,
   desfazerPendente: convcard.desfazerPendente,
   obterLogs,
-  limparLogs,
   atualizarEndereco: convcard.atualizarEndereco,
   cadastrarToken: convcard.cadastrarToken,
 } satisfies {

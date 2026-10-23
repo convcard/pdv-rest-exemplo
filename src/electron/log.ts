@@ -3,8 +3,8 @@
  *
  *  - Pasta: <userData>/logs (Windows: %APPDATA%\PDV Convcard Exemplo\logs;
  *    Linux: ~/.config/PDV Convcard Exemplo/logs).
- *  - Um arquivo por dia (pdv-AAAA-MM-DD.log); arquivos com mais de
- *    DIAS_RETENCAO dias são apagados ao iniciar.
+ *  - Um arquivo por dia (pdv-AAAA-MM-DD.log). Nenhum arquivo é apagado pelo
+ *    app: a ideia é manter o máximo de informação para diagnóstico.
  *  - Formato: "2026-10-23 15:04:05.123 [INFO ] [exec 3] [main] mensagem",
  *    onde "exec" é o número da execução do app (tabela execucao do banco).
  *    Cada abertura do app começa com uma linha separadora.
@@ -23,8 +23,6 @@ import { format } from 'node:util';
 type Nivel = 'DEBUG' | 'INFO' | 'WARN' | 'ERROR';
 type Origem = 'main' | 'renderer';
 
-const DIAS_RETENCAO = 30;
-
 const consoleOriginal = {
   debug: console.debug.bind(console),
   log: console.log.bind(console),
@@ -40,7 +38,6 @@ let execucao: number | undefined;
 export function iniciarLog(): void {
   pasta = path.join(app.getPath('userData'), 'logs');
   fs.mkdirSync(pasta, { recursive: true });
-  apagarLogsAntigos(pasta);
 
   // Redireciona o console do main para o arquivo (sem deixar de mostrar no terminal)
   const redirecionar = (metodo: keyof typeof consoleOriginal, nivel: Nivel) => {
@@ -96,16 +93,6 @@ function escreverLinha(linha: string): void {
     fs.appendFileSync(path.join(pasta, `pdv-${dataLocal(new Date())}.log`), linha);
   } catch (e) {
     consoleOriginal.error('Falha ao gravar o log:', e);
-  }
-}
-
-function apagarLogsAntigos(dir: string): void {
-  const limite = Date.now() - DIAS_RETENCAO * 24 * 60 * 60 * 1000;
-  for (const nome of fs.readdirSync(dir)) {
-    const arquivo = path.join(dir, nome);
-    if (/^pdv-\d{4}-\d{2}-\d{2}\.log$/.test(nome) && fs.statSync(arquivo).mtimeMs < limite) {
-      fs.rmSync(arquivo, { force: true });
-    }
   }
 }
 

@@ -25,11 +25,6 @@ export class LogIntegracaoService {
     void this.api.obterLogs().then((logs) => this.mesclar(logs));
   }
 
-  async limpar(): Promise<void> {
-    await this.api.limparLogs();
-    this.registros.set([]);
-  }
-
   private mesclar(novos: LogIntegracao[]): void {
     this.registros.update((atuais) => {
       const ids = new Set(atuais.map((l) => l.id));

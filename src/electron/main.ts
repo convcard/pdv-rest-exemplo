@@ -5,7 +5,9 @@
  *  - criar a janela do PDV;
  *  - registrar os handlers IPC que a tela usa para chamar a integração
  *    Convcard (a integração em si roda aqui, no Node.js);
- *  - desfazer, ao abrir, uma transação que tenha ficado pendente;
+ *  - desfazer, ao abrir, uma transação que tenha ficado pendente (independe
+ *    da tela);
+ *  - guardar o log da integração e avisar a tela a cada novo registro;
  *  - gravar o log em arquivo (log.ts): console do main e do renderer, cada
  *    operação IPC e cada requisição ao autorizador.
  */
@@ -24,6 +26,7 @@ import {
   OPERACOES,
   type ConvcardApi,
   type FiltroFatura,
+  type LogIntegracao,
   type Operacao,
   type ResultadoIpc,
 } from '../shared/ipc';
@@ -103,6 +106,29 @@ const selecionarChave = () =>
   selecionarArquivo('Selecione a chave privada Convcard (.key)', 'Chave privada PEM', ['key', 'pem']);
 
 /**
+ * Log da integração: o main guarda os últimos registros e avisa a tela a cada
+ * novo (CANAL_LOG). Ao abrir, a tela pede a lista (obterLogs), então vê também
+ * o que aconteceu antes de ela carregar, como o desfazimento ao iniciar.
+ */
+const LIMITE_LOGS = 200;
+let logs: LogIntegracao[] = [];
+let proximoIdLog = 1;
+
+function adicionarLog(novo: Omit<LogIntegracao, 'id'>): void {
+  const log: LogIntegracao = { id: proximoIdLog++, ...novo };
+  logs = [log, ...logs].slice(0, LIMITE_LOGS);
+  janela?.webContents.send(CANAL_LOG, log);
+}
+
+async function obterLogs(): Promise<LogIntegracao[]> {
+  return logs;
+}
+
+async function limparLogs(): Promise<void> {
+  logs = [];
+}
+
+/**
  * Função do main que atende cada operação da ConvcardApi. O "satisfies"
  * garante em tempo de compilação que os parâmetros e retornos batem com o
  * contrato usado pela tela.
@@ -127,6 +153,8 @@ const HANDLERS = {
   solicitarRecebimentoAntecipado: convcard.solicitarRecebimentoAntecipado,
   confirmarPendente: convcard.confirmarPendente,
   desfazerPendente: convcard.desfazerPendente,
+  obterLogs,
+  limparLogs,
   atualizarEndereco: convcard.atualizarEndereco,
   cadastrarToken: convcard.cadastrarToken,
 } satisfies {
@@ -199,7 +227,7 @@ function registrarHandlers() {
     else console.info(linha);
     console.debug(`[HTTP] Requisição: ${JSON.stringify(log.requisicao)}`);
     if (log.resposta !== undefined) console.debug(`[HTTP] Resposta: ${JSON.stringify(log.resposta)}`);
-    janela?.webContents.send(CANAL_LOG, log);
+    adicionarLog(log);
   });
 }
 

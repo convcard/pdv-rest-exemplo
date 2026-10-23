@@ -48,10 +48,12 @@ export class ConvcardErro extends Error {
 
 type Metodo = 'GET' | 'POST' | 'PUT' | 'DELETE';
 
-let registrarLog: (log: LogIntegracao) => void = () => undefined;
+type NovoLog = Omit<LogIntegracao, 'id'>;
+
+let registrarLog: (log: NovoLog) => void = () => undefined;
 
 /** Permite ao main.ts repassar cada requisição para o painel de log da tela. */
-export function aoRegistrarLog(callback: (log: LogIntegracao) => void): void {
+export function aoRegistrarLog(callback: (log: NovoLog) => void): void {
   registrarLog = callback;
 }
 
@@ -118,7 +120,7 @@ function executar(
   const url = URL_HOMOLOGACAO + caminho;
   const json = JSON.stringify(corpo);
   const inicio = Date.now();
-  const log: LogIntegracao = {
+  const log: NovoLog = {
     data: new Date().toISOString(),
     metodo,
     url,

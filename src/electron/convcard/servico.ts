@@ -361,17 +361,22 @@ async function desfazerPendenteAnterior(): Promise<void> {
   }
 }
 
-/** Chamado ao abrir o PDV: desfaz transação que ficou pendente (ex.: PDV fechou no meio da venda). */
+/**
+ * Chamado pelo main ao abrir o PDV, independente da tela: desfaz a transação
+ * que ficou pendente (ex.: PDV fechou no meio da venda). Se o desfazimento
+ * falhar (sem rede, por exemplo), a pendência continua gravada e será
+ * desfeita antes da próxima transação.
+ */
 export async function desfazerPendenteAoIniciar(): Promise<void> {
-  if (!(await obterPendente())) {
+  const pendente = await obterPendente<Pendente>();
+  if (!pendente) {
     return;
   }
+  console.info(`[CONVCARD] Transação pendente encontrada ao iniciar: ${pendente.tipo}`);
   try {
     await desfazerPendente();
-    console.info('[CONVCARD] Transação pendente desfeita ao iniciar.');
   } catch (e) {
-    // Mantém a pendência; ela será desfeita antes da próxima transação.
-    console.error('[CONVCARD] Falha ao desfazer transação pendente:', (e as Error).message);
+    console.error('[CONVCARD] Falha ao desfazer transação pendente ao iniciar:', (e as Error).message);
   }
 }
 

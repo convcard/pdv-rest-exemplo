@@ -1,10 +1,10 @@
 <div class="log-topo">
   <strong><app-icone nome="log" />Log da integração</strong>
-  <button class="pequeno" (click)="log.limpar()"><app-icone nome="limpar" />Limpar</button>
+  <button class="pequeno" (click)="void log.limpar()"><app-icone nome="limpar" />Limpar</button>
 </div>
 
 <div class="log-itens">
-  @for (item of log.itens(); track item.data + item.url) {
+  @for (item of log.itens(); track item.id) {
     <details [class.ok]="sucesso(item)" [class.falha]="!sucesso(item)">
       <summary>
         <span class="metodo" [class]="'metodo-' + item.metodo.toLowerCase()">{{ item.metodo }}</span>

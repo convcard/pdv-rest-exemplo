@@ -113,8 +113,14 @@ export interface UltimaTransacao {
   comprovante?: string;
 }
 
-/** Registro de uma requisição feita ao autorizador, exibido no painel de log da tela. */
+/**
+ * Registro de uma requisição feita ao autorizador, exibido no painel de log da
+ * tela. O main guarda os últimos registros (ver main.ts), então a tela recebe
+ * também o que aconteceu antes de ela abrir (ex.: desfazimento ao iniciar).
+ */
 export interface LogIntegracao {
+  /** Sequencial atribuído pelo main; usado pela tela para não duplicar registros */
+  id: number;
   data: string;
   metodo: string;
   url: string;
@@ -169,7 +175,11 @@ export interface ConvcardApi {
   atualizarEndereco(dados: DadosEndereco): Promise<void>;
   cadastrarToken(cartao: string, cvv: string): Promise<TokenModel>;
 
-  /** Recebe cada requisição feita ao autorizador (para o painel de log) */
+  // Log da integração (painel da tela)
+  /** Registros guardados pelo main, mais recentes primeiro */
+  obterLogs(): Promise<LogIntegracao[]>;
+  limparLogs(): Promise<void>;
+  /** Recebe cada nova requisição feita ao autorizador */
   aoRegistrarLog(callback: (log: LogIntegracao) => void): void;
 }
 
@@ -196,6 +206,8 @@ export const OPERACOES = [
   'desfazerPendente',
   'atualizarEndereco',
   'cadastrarToken',
+  'obterLogs',
+  'limparLogs',
 ] as const satisfies readonly Exclude<keyof ConvcardApi, 'aoRegistrarLog'>[];
 
 export type Operacao = (typeof OPERACOES)[number];

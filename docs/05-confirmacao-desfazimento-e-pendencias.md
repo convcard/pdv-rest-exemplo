@@ -167,7 +167,7 @@ obterPendente()    -> JSON.parse(await descriptografar(dados))
 
 O exemplo aplica duas regras de recuperação:
 
-1. **Ao abrir o PDV** (`desfazerPendenteAoIniciar`): se houver pendência, ela é desfeita. Se o desfazimento falhar (sem rede, por exemplo), a pendência continua gravada.
+1. **Ao abrir o PDV** (`desfazerPendenteAoIniciar`, chamado pelo main ao iniciar, independente da tela): se houver pendência, ela é desfeita. Se o desfazimento falhar (sem rede, por exemplo), a pendência continua gravada. O desfazimento aparece no painel "Log da integração" mesmo acontecendo antes de a tela abrir, porque o main guarda o log e a tela pede a lista ao iniciar.
 2. **Antes de cada nova transação** (`desfazerPendenteAnterior`): se ainda houver pendência, ela é desfeita. Se não for possível desfazer, a nova transação é bloqueada com a mensagem "Existe uma transação anterior pendente que não pôde ser desfeita".
 
 ## Exceções

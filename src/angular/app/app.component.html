@@ -1,0 +1,19 @@
+<header class="topo">
+  <div class="marca">
+    <img src="imagens/convcard-logo-branco.svg" alt="Convcard" />
+    <div class="marca-texto">
+      <strong>PDV Convcard</strong>
+      <span>Exemplo de integração com o Autorizador</span>
+    </div>
+  </div>
+  <span class="selo-homologacao"><app-icone nome="homologacao" />Homologação</span>
+  <div class="topo-acoes">
+    <button title="Funções Convcard" (click)="abrirFuncoes()"><app-icone nome="funcoes" />Funções Convcard <kbd>Ctrl+U</kbd></button>
+    <button (click)="abrirConfiguracao()"><app-icone nome="configuracoes" />Configurações</button>
+  </div>
+</header>
+
+<main class="conteudo">
+  <app-venda class="coluna-venda" />
+  <app-log-integracao class="log" />
+</main>

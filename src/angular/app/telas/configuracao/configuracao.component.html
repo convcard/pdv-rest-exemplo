@@ -1,0 +1,45 @@
+<app-tela-tef titulo="Configurações">
+  <div class="grade-campos" style="grid-template-columns: 170px 1fr">
+    <label>Ambiente:</label>
+    <input value="Homologação (aut-h.convcard.com.br)" readonly tabindex="-1" />
+
+    <label>Token da loja:</label>
+    <input placeholder="01c760b2-a9db-429c-ad60-d926f49878cd" cdkFocusInitial [(ngModel)]="identificadorLoja" />
+
+    <label>Nome da loja:</label>
+    <input [(ngModel)]="nomeLoja" />
+
+    <label>Enviar dados receita:</label>
+    <select [(ngModel)]="usaReceita">
+      <option [ngValue]="true">SIM</option>
+      <option [ngValue]="false">NÃO</option>
+    </select>
+
+    <label>Enviar número nota:</label>
+    <select [(ngModel)]="usaNumNota">
+      <option [ngValue]="true">SIM</option>
+      <option [ngValue]="false">NÃO</option>
+    </select>
+
+    <label>Certificado (.p12):</label>
+    <span class="linha">
+      <input readonly [value]="caminhoCertificado()" />
+      <button title="Selecionar certificado" (click)="selecionarCertificado()"><app-icone nome="pasta" />Selecionar</button>
+    </span>
+
+    <label>Senha do certificado:</label>
+    <input type="password" [(ngModel)]="senhaCertificado" />
+
+    <label>Nome do software:</label>
+    <input [(ngModel)]="nomeSoftware" />
+
+    <label>Versão do software:</label>
+    <input [(ngModel)]="versaoSoftware" />
+  </div>
+
+  <div class="botoes centro">
+    <button class="primario" (click)="salvarEFechar()"><app-icone nome="salvar" />Salvar<kbd>F2</kbd></button>
+    <button (click)="validar()"><app-icone nome="validar" />Validar configuração<kbd>F3</kbd></button>
+    <button (click)="fechar()"><app-icone nome="sair" />Sair<kbd>Esc</kbd></button>
+  </div>
+</app-tela-tef>

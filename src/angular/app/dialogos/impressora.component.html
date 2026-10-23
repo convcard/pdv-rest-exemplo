@@ -1,0 +1,11 @@
+<app-tela-tef [titulo]="titulo" sobretitulo="Impressora (simulada)" [logo]="false" [rodape]="false">
+  <pre class="comprovante">{{ texto }}</pre>
+  <div class="botoes centro">
+    <button class="primario" (click)="fechar(true)" cdkFocusInitial>
+      <app-icone nome="imprimir" />Impresso<kbd>F2</kbd>
+    </button>
+    <button class="perigo" (click)="fechar(false)">
+      <app-icone nome="falha" />Falha na impressão<kbd>F3</kbd>
+    </button>
+  </div>
+</app-tela-tef>

@@ -1,0 +1,56 @@
+<app-tela-tef titulo="Recebimento">
+  <div class="cabecalho-recebimento">
+    <div class="modos">
+      <button tabindex="-1" [class.ativo]="modo() === 'RECEBIMENTO'" [disabled]="travado" (click)="definirModo('RECEBIMENTO')">
+        <app-icone nome="recebimento" />Recebimento<kbd>F3</kbd>
+      </button>
+      <button tabindex="-1" [class.ativo]="modo() === 'RECEBIMENTO_ANTECIPADO'" [disabled]="travado" (click)="definirModo('RECEBIMENTO_ANTECIPADO')">
+        <app-icone nome="antecipado" />Recebimento antecipado<kbd>F4</kbd>
+      </button>
+    </div>
+  </div>
+
+  <div class="grade-campos" style="grid-template-columns: 150px 1fr 150px">
+    @if (modo() === 'RECEBIMENTO') {
+      <label>Consultar por:</label>
+      <select [ngModel]="tipo()" (ngModelChange)="trocarTipo($event)" [disabled]="travado">
+        @for (f of filtros; track f.tipo) {
+          <option [value]="f.tipo">{{ f.tipo }}</option>
+        }
+      </select>
+      <span></span>
+    }
+
+    <label>{{ tipo() }}:</label>
+    @for (f of filtros; track f.tipo) {
+      @if (f.tipo === tipo()) {
+        <input class="num" placeholder="Informe o número" autocomplete="off" cdkFocusInitial
+          [appMascara]="f.mascara" [tamanho]="f.tamanho" [disabled]="travado"
+          [ngModel]="filtro()" (ngModelChange)="aoMudarFiltro($event)" (keydown.enter)="pesquisar()" />
+      }
+    }
+    <span class="dica-enter">Pressione ENTER para pesquisar</span>
+
+    @if (modo() === 'RECEBIMENTO') {
+      <label>Número fatura:</label><input class="num" disabled [value]="numero() ?? ''" /><span></span>
+      <label>NSU fatura:</label><input class="num" disabled [value]="nsu() ?? ''" /><span></span>
+      <label>Vencimento fatura:</label><input class="num" disabled [value]="vencimento() | date: 'dd/MM/yyyy'" /><span></span>
+    }
+
+    <label>Valor recebido:</label>
+    <input class="num" appMascara="valor" [(ngModel)]="valor" />
+    <span></span>
+
+    @if (modo() === 'RECEBIMENTO_ANTECIPADO') {
+      <label>Valor receber:</label><input class="num" disabled [value]="receber() | number: '1.2-2'" /><span></span>
+    }
+  </div>
+
+  <div class="botoes direita">
+    <button class="primario" (click)="finalizar()"><app-icone nome="finalizar" />Finalizar<kbd>F2</kbd></button>
+    @if (!travado) {
+      <button (click)="limpar()"><app-icone nome="limpar" />Limpar<kbd>F5</kbd></button>
+    }
+    <button (click)="aoEsc()"><app-icone nome="sair" />Sair<kbd>Esc</kbd></button>
+  </div>
+</app-tela-tef>

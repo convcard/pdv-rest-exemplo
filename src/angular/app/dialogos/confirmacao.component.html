@@ -1,0 +1,7 @@
+<app-tela-tef [titulo]="dados.titulo" sobretitulo="" [logo]="false" [rodape]="false">
+  <div class="mensagem">{{ dados.mensagem }}</div>
+  <div class="botoes centro">
+    <button class="primario" (click)="responder(true)" cdkFocusInitial>Sim</button>
+    <button (click)="responder(false)">Não</button>
+  </div>
+</app-tela-tef>

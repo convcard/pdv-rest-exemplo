@@ -24,10 +24,10 @@ import type {
   SaldoModel,
   TokenModel,
   ValidarConfiguracaoOutputModel,
-} from '../convcard/modelos';
+} from './modelos';
 
 /**
- * Configuração da integração, salva em disco pelo main (config.json).
+ * Configuração da integração, salva pelo main no banco SQLite (tabela configuracao).
  */
 export interface Configuracao {
   /** Caminho do certificado .p12 fornecido pela Convcard */
@@ -132,7 +132,7 @@ export interface LogIntegracao {
 
 /**
  * API disponível na tela como window.convcard.
- * Cada função corresponde a uma função de src/convcard/servico.ts (veja lá
+ * Cada função corresponde a uma função de src/electron/convcard/servico.ts (veja lá
  * qual endpoint é chamado e as regras de cada uma).
  */
 export interface ConvcardApi {

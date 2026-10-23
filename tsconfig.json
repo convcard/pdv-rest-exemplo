@@ -1,4 +1,6 @@
 {
+  // Processo main / preload do Electron (Node.js) + tipos compartilhados.
+  // As telas (Angular) usam o tsconfig.app.json.
   "compilerOptions": {
     "target": "ESNext",
     "module": "preserve",
@@ -10,5 +12,5 @@
     "sourceMap": true,
     "resolveJsonModule": true
   },
-  "include": ["src/**/*", "*.ts", "*.mts"]
+  "include": ["src/electron/**/*", "src/shared/**/*", "*.ts", "*.mts"]
 }

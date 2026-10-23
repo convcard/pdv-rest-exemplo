@@ -1,0 +1,15 @@
+<app-tela-tef titulo="Reimpressão">
+  <fieldset class="selecao">
+    <legend>Seleção:</legend>
+    @for (opcao of opcoes; track opcao.tipo) {
+      <label class="checkbox">
+        <input type="radio" name="reimpressao" [value]="opcao.tipo" [(ngModel)]="selecionado" />{{ opcao.rotulo }}
+      </label>
+    }
+  </fieldset>
+
+  <div class="botoes centro">
+    <button class="primario" (click)="reimprimir()" cdkFocusInitial><app-icone nome="imprimir" />Reimprimir<kbd>F2</kbd></button>
+    <button (click)="fechar()"><app-icone nome="cancelar" />Cancelar<kbd>Esc</kbd></button>
+  </div>
+</app-tela-tef>

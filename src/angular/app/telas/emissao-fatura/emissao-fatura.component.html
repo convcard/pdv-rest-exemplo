@@ -1,0 +1,23 @@
+<app-tela-tef titulo="Emissão de fatura">
+  <div class="grade-campos" style="grid-template-columns: 110px 1fr">
+    <label>Consultar por:</label>
+    <select [ngModel]="tipo()" (ngModelChange)="trocarTipo($event)">
+      @for (f of filtros; track f.tipo) {
+        <option [value]="f.tipo">{{ f.tipo }}</option>
+      }
+    </select>
+
+    <label>{{ tipo() }}:</label>
+    @for (f of filtros; track f.tipo) {
+      @if (f.tipo === tipo()) {
+        <input class="num" placeholder="Informe o número" autocomplete="off" cdkFocusInitial
+          [appMascara]="f.mascara" [tamanho]="f.tamanho" [(ngModel)]="filtro" (keydown.enter)="emitir()" />
+      }
+    }
+  </div>
+
+  <div class="botoes centro">
+    <button class="primario" (click)="emitir()"><app-icone nome="fatura" />Emitir<kbd>F2</kbd></button>
+    <button (click)="fechar()"><app-icone nome="sair" />Sair<kbd>Esc</kbd></button>
+  </div>
+</app-tela-tef>

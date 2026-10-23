@@ -1,0 +1,26 @@
+<div class="log-topo">
+  <strong><app-icone nome="log" />Log da integração</strong>
+  <button class="pequeno" (click)="log.limpar()"><app-icone nome="limpar" />Limpar</button>
+</div>
+
+<div class="log-itens">
+  @for (item of log.itens(); track item.data + item.url) {
+    <details [class.ok]="sucesso(item)" [class.falha]="!sucesso(item)">
+      <summary>
+        <span class="metodo" [class]="'metodo-' + item.metodo.toLowerCase()">{{ item.metodo }}</span>
+        <span class="caminho">{{ caminho(item) }}</span>
+        <span class="status">{{ item.status ?? 'erro' }}</span>
+        <span class="tempo">{{ item.data | date: 'HH:mm:ss' }} · {{ item.duracaoMs }}ms</span>
+      </summary>
+      <pre>URL: {{ item.url }}
+
+Requisição:
+{{ item.requisicao | json }}
+
+Resposta:
+{{ item.resposta ?? item.erro | json }}</pre>
+    </details>
+  } @empty {
+    <p class="vazio">As requisições ao autorizador aparecem aqui.</p>
+  }
+</div>

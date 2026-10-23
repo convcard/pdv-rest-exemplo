@@ -1,0 +1,6 @@
+<app-tela-tef titulo="Mensagem Operador" sobretitulo="" [logo]="false" [rodape]="false">
+  <textarea class="mensagem-operador" readonly>{{ dados.mensagem }}</textarea>
+  <div class="botoes centro">
+    <button class="primario" (click)="fechar()" cdkFocusInitial>OK ({{ restantes() }})</button>
+  </div>
+</app-tela-tef>

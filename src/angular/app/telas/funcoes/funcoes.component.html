@@ -1,0 +1,10 @@
+<app-tela-tef titulo="Funções administrativas">
+  <div class="menu">
+    @for (opcao of opcoes; track opcao.tecla) {
+      <button #botaoOpcao (click)="executar(opcao)">
+        <app-icone [nome]="opcao.icone" /><span>{{ opcao.rotulo }}</span><kbd>{{ opcao.tecla }}</kbd>
+      </button>
+    }
+    <button #botaoOpcao (click)="fechar()"><app-icone nome="sair" /><span>Sair</span><kbd>Esc</kbd></button>
+  </div>
+</app-tela-tef>

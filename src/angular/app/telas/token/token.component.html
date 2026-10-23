@@ -1,0 +1,19 @@
+<app-tela-tef titulo="Cadastro de token">
+  <div class="grade-campos" style="grid-template-columns: 117px 1fr 60px">
+    <label>Número do cartão:</label>
+    <input class="campo-grande" appMascara="cartao" autocomplete="off" cdkFocusInitial [(ngModel)]="cartao" />
+    <input class="campo-grande" appMascara="numero" [tamanho]="3" placeholder="CVV" autocomplete="off" [(ngModel)]="cvv" />
+  </div>
+
+  @if (token(); as t) {
+    <table class="grade detalhe">
+      <tr><th>Cartão</th><td>{{ t.cartao }}</td></tr>
+      <tr><th>Token</th><td><code>{{ t.token }}</code></td></tr>
+    </table>
+  }
+
+  <div class="botoes centro">
+    <button class="primario" (click)="enviar()"><app-icone nome="enviar" />Enviar<kbd>F2</kbd></button>
+    <button (click)="fechar()"><app-icone nome="sair" />Sair<kbd>Esc</kbd></button>
+  </div>
+</app-tela-tef>

@@ -1,0 +1,63 @@
+<app-tela-tef titulo="Venda">
+  <div class="faixa-titulo esquerda">CARTÃO: CONVCARD</div>
+
+  <div class="valor-parcelas">
+    <div>
+      <label>Valor:</label>
+      <input class="valor-grande" readonly tabindex="-1" [value]="dados.valor | number: '1.2-2'" />
+    </div>
+    <div>
+      <label>Parcelas:</label>
+      <input class="valor-grande" readonly tabindex="-1" [value]="dados.qtdParcelas" />
+    </div>
+  </div>
+
+  <div class="grade-campos" style="grid-template-columns: 117px 1fr 60px">
+    <label>Número do cartão:</label>
+    <input class="campo-grande" appMascara="cartao" autocomplete="off" cdkFocusInitial
+      [(ngModel)]="cartao" [disabled]="processando()" (keydown.enter)="enviar()" />
+    <input class="campo-grande" appMascara="numero" [tamanho]="3" placeholder="CVV" autocomplete="off"
+      [(ngModel)]="cvv" [disabled]="!cvvHabilitado()" />
+
+    <label>Senha:</label>
+    <input type="password" class="campo-grande" appMascara="numero" [tamanho]="8" autocomplete="off"
+      [(ngModel)]="senha" [disabled]="!senhaHabilitada()" />
+    <span></span>
+  </div>
+
+  @if (usaReceita) {
+    <div class="grade-campos" style="grid-template-columns: 117px 1fr 36px 90px">
+      <label class="checkbox">
+        <input type="checkbox" [(ngModel)]="comReceita" [disabled]="processando()" />Com receita?
+      </label>
+      <span class="linha span3">
+        <label>Data receita:</label>
+        <input type="date" [(ngModel)]="dataReceita" [disabled]="!comReceita() || processando()" />
+      </span>
+
+      <label>CRM:</label>
+      <input appMascara="maiusculas" [tamanho]="10" [(ngModel)]="crm" [disabled]="!comReceita() || processando()" />
+      <label>UF:</label>
+      <select [(ngModel)]="uf" [disabled]="!comReceita() || processando()">
+        <option value=""></option>
+        @for (sigla of ufs; track sigla) {
+          <option [value]="sigla">{{ sigla }}</option>
+        }
+      </select>
+    </div>
+  }
+
+  <app-visor [estado]="visor()" />
+
+  <div class="botoes centro">
+    <button class="primario" [disabled]="processando()" (click)="enviar()">
+      <app-icone nome="enviar" />Enviar<kbd>F2</kbd>
+    </button>
+    <button tabindex="-1" [disabled]="!qrCodeHabilitado()" (click)="pagarComQrCode()">
+      <app-icone nome="qrcode" />QR Code<kbd>F3</kbd>
+    </button>
+    <button tabindex="-1" [disabled]="processando()" (click)="cancelar()">
+      <app-icone nome="cancelar" />Cancelar<kbd>Esc</kbd>
+    </button>
+  </div>
+</app-tela-tef>

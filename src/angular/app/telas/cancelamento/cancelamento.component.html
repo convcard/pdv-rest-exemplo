@@ -1,0 +1,23 @@
+<app-tela-tef titulo="Cancelamento">
+  <div class="faixa-titulo esquerda">Cancelamento de venda</div>
+
+  <div class="grade-campos" style="grid-template-columns: 117px 1fr 60px">
+    <label>Número do cartão:</label>
+    <input class="campo-grande" appMascara="cartao" autocomplete="off" cdkFocusInitial [(ngModel)]="cartao" />
+    <input class="campo-grande" appMascara="numero" [tamanho]="3" placeholder="CVV" autocomplete="off"
+      [(ngModel)]="cvv" [disabled]="!cvvHabilitado()" />
+
+    <label>Valor:</label>
+    <input class="campo-grande" appMascara="valor" [(ngModel)]="valor" />
+    <span></span>
+
+    <label>Autorização:</label>
+    <input class="campo-grande" appMascara="numero" [tamanho]="5" [(ngModel)]="autorizacao" />
+    <span></span>
+  </div>
+
+  <div class="botoes centro">
+    <button class="primario" (click)="enviar()"><app-icone nome="enviar" />Enviar<kbd>F2</kbd></button>
+    <button tabindex="-1" (click)="fechar()"><app-icone nome="cancelar" />Cancelar<kbd>Esc</kbd></button>
+  </div>
+</app-tela-tef>

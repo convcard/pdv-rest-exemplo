@@ -1,0 +1,24 @@
+<app-tela-tef titulo="QRCode">
+  <app-visor [estado]="visor()" />
+
+  <div class="qrcode-imagem">
+    @if (imagem(); as src) {
+      <img [src]="src" alt="QR Code" />
+    } @else {
+      <div class="qrcode-carregando"><app-icone nome="qrcode" /></div>
+    }
+  </div>
+  <div class="qrcode-codigo">{{ codigoFormatado() }}</div>
+
+  <div class="botoes centro">
+    <button [disabled]="!imagem()" (click)="compartilhar()">
+      <app-icone nome="compartilhar" />Compartilhar<kbd>F2</kbd>
+    </button>
+    <button [disabled]="!imagem()" (click)="imprimir()" title="A impressão é efetuada somente na impressora padrão do windows.">
+      <app-icone nome="imprimir" />Imprimir<kbd>F4</kbd>
+    </button>
+    <button (click)="cancelar()" cdkFocusInitial>
+      <app-icone nome="cancelar" />Cancelar<kbd>Esc</kbd>
+    </button>
+  </div>
+</app-tela-tef>

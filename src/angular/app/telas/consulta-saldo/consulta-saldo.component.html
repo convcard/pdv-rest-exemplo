@@ -1,0 +1,40 @@
+<app-tela-tef titulo="Consulta">
+  <div class="cabecalho-consulta">
+    <div>
+      <div class="linha">
+        <label>Cartão:</label>
+        <input class="campo-grande" appMascara="cartao" placeholder="Informe aqui o número do cartão" autocomplete="off"
+          cdkFocusInitial [(ngModel)]="cartao" (keydown.enter)="pesquisar()" />
+      </div>
+      <div class="dica-enter">Pressione ENTER para pesquisar</div>
+    </div>
+  </div>
+
+  @let s = saldo();
+  @let fatura = s?.fatura;
+  <div class="consulta-colunas">
+    <div class="grade-campos" style="grid-template-columns: 150px 1fr">
+      <div class="secao">Dados do cartão</div>
+      <label>Usuário do cartão:</label><input readonly tabindex="-1" [value]="s?.usuario ?? ''" />
+      <label>Situação do cartão:</label><input readonly tabindex="-1" [value]="s?.situacao ?? ''" />
+      <label>Limite de crédito total:</label><input class="num" readonly tabindex="-1" [value]="s?.limite | number: '1.2-2'" />
+      <label>Saldo utilizado:</label><input class="num" readonly tabindex="-1" [value]="s?.compras | number: '1.2-2'" />
+      <label>Saldo disponível:</label><input class="num" readonly tabindex="-1" [value]="s?.saldo | number: '1.2-2'" />
+    </div>
+
+    <div class="grade-campos" style="grid-template-columns: 130px 1fr">
+      <div class="secao">Dados da última fatura <span class="status-fatura">{{ statusFatura() }}</span></div>
+      <label>Vencimento:</label><input class="num" readonly tabindex="-1" [value]="fatura?.vencimento | date: 'dd/MM/yyyy'" />
+      <label>Número da fatura:</label><input class="num" readonly tabindex="-1" [value]="fatura?.numero ?? ''" />
+      <label>NSU da fatura:</label><input class="num" readonly tabindex="-1" [value]="fatura?.nsu ?? ''" />
+      <label>Valor mínimo:</label><input class="num" readonly tabindex="-1" [value]="fatura?.valorMinimo | number: '1.2-2'" />
+      <label>Valor total:</label><input class="num" readonly tabindex="-1" [value]="fatura?.valor | number: '1.2-2'" />
+    </div>
+  </div>
+
+  <div class="botoes direita">
+    <button (click)="limpar()"><app-icone nome="limpar" />Limpar<kbd>F5</kbd></button>
+    <button class="primario" (click)="recebimentos()"><app-icone nome="recebimentos" />Recebimentos<kbd>F6</kbd></button>
+    <button (click)="fechar()"><app-icone nome="sair" />Sair<kbd>Esc</kbd></button>
+  </div>
+</app-tela-tef>

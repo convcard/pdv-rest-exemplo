@@ -5,7 +5,9 @@
  *    Linux: ~/.config/PDV Convcard Exemplo/logs).
  *  - Um arquivo por dia (pdv-AAAA-MM-DD.log); arquivos com mais de
  *    DIAS_RETENCAO dias são apagados ao iniciar.
- *  - Formato: "2026-10-23 15:04:05.123 [INFO ] [main] mensagem".
+ *  - Formato: "2026-10-23 15:04:05.123 [INFO ] [exec 3] [main] mensagem",
+ *    onde "exec" é o número da execução do app (tabela execucao do banco).
+ *    Cada abertura do app começa com uma linha separadora.
  *
  * Tudo que sai no console do main (console.log/info/warn/error/debug) e no
  * console do renderer (telas Angular) também é gravado aqui, então basta usar
@@ -32,6 +34,7 @@ const consoleOriginal = {
 };
 
 let pasta: string | undefined;
+let execucao: number | undefined;
 
 /** Chame uma vez, no início do main. */
 export function iniciarLog(): void {
@@ -54,7 +57,12 @@ export function iniciarLog(): void {
 
   process.on('uncaughtException', (e) => console.error('[MAIN] Exceção não tratada:', e));
   process.on('unhandledRejection', (e) => console.error('[MAIN] Promise rejeitada sem tratamento:', e));
+}
 
+/** Marca o início de uma execução: linha separadora e o número dela nas linhas seguintes. */
+export function iniciarExecucaoNoLog(numero: number): void {
+  execucao = numero;
+  escreverLinha(`${'='.repeat(30)} Execução ${numero} ${'='.repeat(30)}\n`);
   console.info(`[APP] ${app.getName()} ${app.getVersion()} iniciado (Electron ${process.versions.electron}, ${process.platform} ${process.arch})`);
   console.info(`[APP] Log em ${pasta}`);
 }
@@ -78,11 +86,14 @@ export function capturarConsoleDoRenderer(web: WebContents): void {
 }
 
 function escrever(nivel: Nivel, origem: Origem, mensagem: string): void {
+  const exec = execucao ? ` [exec ${execucao}]` : '';
+  escreverLinha(`${carimbo(new Date())} [${nivel.padEnd(5)}]${exec} [${origem}] ${mensagem}\n`);
+}
+
+function escreverLinha(linha: string): void {
   if (!pasta) return;
-  const agora = new Date();
-  const linha = `${carimbo(agora)} [${nivel.padEnd(5)}] [${origem}] ${mensagem}\n`;
   try {
-    fs.appendFileSync(path.join(pasta, `pdv-${dataLocal(agora)}.log`), linha);
+    fs.appendFileSync(path.join(pasta, `pdv-${dataLocal(new Date())}.log`), linha);
   } catch (e) {
     consoleOriginal.error('Falha ao gravar o log:', e);
   }

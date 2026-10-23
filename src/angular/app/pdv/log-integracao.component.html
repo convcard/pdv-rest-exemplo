@@ -4,13 +4,20 @@
 </div>
 
 <div class="log-itens">
-  @for (item of log.itens(); track item.id) {
+  @for (item of log.itens(); track item.id; let i = $index) {
+    <!-- Separador sempre que muda a execução do PDV (cada abertura do app) -->
+    @if (i === 0 || log.itens()[i - 1].execucao !== item.execucao) {
+      <div class="log-separador">
+        <span>Execução {{ item.execucao }}</span>
+        <span>aberta em {{ item.inicioExecucao | date: 'dd/MM/yyyy HH:mm:ss' }}</span>
+      </div>
+    }
     <details [class.ok]="sucesso(item)" [class.falha]="!sucesso(item)">
       <summary>
         <span class="metodo" [class]="'metodo-' + item.metodo.toLowerCase()">{{ item.metodo }}</span>
         <span class="caminho">{{ caminho(item) }}</span>
         <span class="status">{{ item.status ?? 'erro' }}</span>
-        <span class="tempo">{{ item.data | date: 'HH:mm:ss' }} · {{ item.duracaoMs }}ms</span>
+        <span class="tempo">{{ item.data | date: 'dd/MM HH:mm:ss' }} · {{ item.duracaoMs }}ms</span>
       </summary>
       <pre>URL: {{ item.url }}
 

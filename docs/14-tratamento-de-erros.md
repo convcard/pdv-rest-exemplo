@@ -102,22 +102,31 @@ suporte Convcard), **mascarando dados sensíveis**:
 A máscara (`src/electron/mascara.ts`) percorre o objeto inteiro, inclusive
 listas e objetos aninhados.
 
-O exemplo mostra esse log no painel "Log da integração" (método, caminho,
-status, duração, corpo da requisição e da resposta) e também o grava no
-arquivo de log.
+O exemplo grava esse log no banco (tabela `log_integracao`, sem limite) junto
+com o número da **execução** do PDV que fez a requisição (tabela `execucao`,
+uma linha por abertura do app), e também no arquivo de log.
+
+No painel "Log da integração" aparecem todos os registros, inclusive de
+execuções anteriores, com um separador a cada execução ("Execução 3 · aberta
+em ..."). O main avisa a tela a cada novo registro e a tela, ao abrir, pede a
+lista; assim aparece até o que aconteceu antes de ela carregar (como o
+desfazimento de uma pendência ao iniciar).
 
 ## Log em arquivo
 
-`src/electron/log.ts` grava um arquivo por dia em `<userData>/logs`
+`src/electron/log.ts` grava um arquivo por dia em `<userData>/logs`. Cada
+abertura do app começa com `===== Execução N =====` e as linhas trazem
+`[exec N]`, o mesmo número do painel. Pastas
 (Windows: `%APPDATA%\PDV Convcard Exemplo\logs`; Linux:
-`~/.config/PDV Convcard Exemplo/logs`), com retenção de 30 dias:
+`~/.config/PDV Convcard Exemplo/logs`); os arquivos ficam 30 dias:
 
 ```
-2026-10-23 15:04:05.123 [INFO ] [main] [IPC] solicitarCompra iniciado [{"valor":38.15,"cartao":"6060***********4567","cvv":"***",...}]
-2026-10-23 15:04:05.130 [DEBUG] [main] [BANCO] NST gerado: 1301
-2026-10-23 15:04:05.812 [INFO ] [main] [HTTP] POST https://aut-h.convcard.com.br/autorizador/compra/solicitacao -> HTTP 200 (682 ms)
-2026-10-23 15:04:05.815 [INFO ] [main] [BANCO] Transação pendente gravada (criptografada): COMPRA
-2026-10-23 15:04:06.020 [INFO ] [renderer] [TELA] Aberta: app-impressora (main.js:1)
+============================== Execução 3 ==============================
+2026-10-23 15:04:05.123 [INFO ] [exec 3] [main] [IPC] solicitarCompra iniciado {"valor":38.15,"cartao":"6060***********4567","cvv":"***",...}
+2026-10-23 15:04:05.130 [DEBUG] [exec 3] [main] [BANCO] NST gerado: 1301
+2026-10-23 15:04:05.812 [INFO ] [exec 3] [main] [HTTP] POST https://aut-h.convcard.com.br/autorizador/compra/solicitacao -> HTTP 200 (682 ms)
+2026-10-23 15:04:05.815 [INFO ] [exec 3] [main] [BANCO] Transação pendente gravada (criptografada): COMPRA
+2026-10-23 15:04:06.020 [INFO ] [exec 3] [renderer] [TELA] Aberta: app-impressora (main.js:1)
 ```
 
 | O que vai para o log | Onde é gerado |

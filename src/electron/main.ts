@@ -7,7 +7,7 @@
  *    Convcard (a integração em si roda aqui, no Node.js);
  *  - desfazer, ao abrir, uma transação que tenha ficado pendente (independe
  *    da tela);
- *  - guardar o log da integração e avisar a tela a cada novo registro;
+ *  - gravar o log da integração no banco e avisar a tela a cada novo registro;
  *  - gravar o log em arquivo (log.ts): console do main e do renderer, cada
  *    operação IPC e cada requisição ao autorizador.
  */
@@ -15,10 +15,18 @@ import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron';
 import fs from 'node:fs';
 import path from 'node:path';
 import started from 'electron-squirrel-startup';
-import { fecharBanco, obterConfiguracao, salvarConfiguracao } from './armazenamento';
+import {
+  fecharBanco,
+  iniciarExecucao,
+  limparLogIntegracao,
+  listarLogIntegracao,
+  obterConfiguracao,
+  salvarConfiguracao,
+  salvarLogIntegracao,
+} from './armazenamento';
 import { aoRegistrarLog, ConvcardErro } from './convcard/cliente';
 import * as convcard from './convcard/servico';
-import { capturarConsoleDoRenderer, iniciarLog } from './log';
+import { capturarConsoleDoRenderer, iniciarExecucaoNoLog, iniciarLog } from './log';
 import { mascararDadosSensiveis } from './mascara';
 import {
   CANAL_LOG,
@@ -37,6 +45,11 @@ if (started) {
 }
 
 iniciarLog();
+
+// Cada abertura do app é uma "execução" numerada (1, 2, 3...), gravada no
+// banco. O número vai no log em arquivo e em cada registro do log da integração.
+const execucao = iniciarExecucao();
+iniciarExecucaoNoLog(execucao.id);
 
 let janela: BrowserWindow | undefined;
 
@@ -106,26 +119,22 @@ const selecionarChave = () =>
   selecionarArquivo('Selecione a chave privada Convcard (.key)', 'Chave privada PEM', ['key', 'pem']);
 
 /**
- * Log da integração: o main guarda os últimos registros e avisa a tela a cada
- * novo (CANAL_LOG). Ao abrir, a tela pede a lista (obterLogs), então vê também
- * o que aconteceu antes de ela carregar, como o desfazimento ao iniciar.
+ * Log da integração: cada registro é gravado no banco (com a execução que o
+ * gerou) e enviado à tela (CANAL_LOG). Ao abrir, a tela pede a lista
+ * (obterLogs), então vê também o que aconteceu antes de ela carregar, como o
+ * desfazimento ao iniciar, e nas execuções anteriores.
  */
-const LIMITE_LOGS = 200;
-let logs: LogIntegracao[] = [];
-let proximoIdLog = 1;
-
-function adicionarLog(novo: Omit<LogIntegracao, 'id'>): void {
-  const log: LogIntegracao = { id: proximoIdLog++, ...novo };
-  logs = [log, ...logs].slice(0, LIMITE_LOGS);
+function adicionarLog(novo: Omit<LogIntegracao, 'id' | 'execucao' | 'inicioExecucao'>): void {
+  const log = salvarLogIntegracao(execucao, novo);
   janela?.webContents.send(CANAL_LOG, log);
 }
 
 async function obterLogs(): Promise<LogIntegracao[]> {
-  return logs;
+  return listarLogIntegracao();
 }
 
 async function limparLogs(): Promise<void> {
-  logs = [];
+  limparLogIntegracao();
 }
 
 /**

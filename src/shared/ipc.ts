@@ -115,12 +115,17 @@ export interface UltimaTransacao {
 
 /**
  * Registro de uma requisição feita ao autorizador, exibido no painel de log da
- * tela. O main guarda os últimos registros (ver main.ts), então a tela recebe
- * também o que aconteceu antes de ela abrir (ex.: desfazimento ao iniciar).
+ * tela. Os registros ficam gravados no banco (tabela log_integracao), então a
+ * tela mostra também o que aconteceu antes de ela abrir e nas execuções
+ * anteriores do PDV.
  */
 export interface LogIntegracao {
-  /** Sequencial atribuído pelo main; usado pela tela para não duplicar registros */
+  /** Sequencial do banco; usado pela tela para não duplicar registros */
   id: number;
+  /** Execução do PDV (sequencial de aberturas do app) que fez a requisição */
+  execucao: number;
+  /** Data/hora em que essa execução começou */
+  inicioExecucao: string;
   data: string;
   metodo: string;
   url: string;
@@ -176,7 +181,7 @@ export interface ConvcardApi {
   cadastrarToken(cartao: string, cvv: string): Promise<TokenModel>;
 
   // Log da integração (painel da tela)
-  /** Registros guardados pelo main, mais recentes primeiro */
+  /** Todos os registros gravados no banco, mais recentes primeiro */
   obterLogs(): Promise<LogIntegracao[]>;
   limparLogs(): Promise<void>;
   /** Recebe cada nova requisição feita ao autorizador */

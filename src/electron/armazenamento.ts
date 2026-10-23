@@ -12,6 +12,9 @@
  *  - transacao_pendente:  transação aprovada que ainda não foi confirmada/desfeita
  *  - ultima_transacao:    comprovante da última venda/cancelamento/recebimento
  *                         (para a "Reimpressão do último movimento")
+ *  - execucao:            uma linha por abertura do app (sequencial de execuções)
+ *  - log_integracao:      requisições ao autorizador (já mascaradas), com a
+ *                         execução que as fez (sem limite; o "Limpar" do painel apaga)
  *
  * Número do cartão, CVV e QR Code não são gravados no banco. A única exceção é
  * a transacao_pendente: ela precisa do movimento completo para desfazer a
@@ -27,7 +30,7 @@
 import { app } from 'electron';
 import path from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
-import type { Configuracao, TipoReimpressao, UltimaTransacao } from '../shared/ipc';
+import type { Configuracao, LogIntegracao, TipoReimpressao, UltimaTransacao } from '../shared/ipc';
 import { criptografar, descriptografar } from './cripto';
 
 let banco: DatabaseSync | undefined;
@@ -68,6 +71,25 @@ function db(): DatabaseSync {
         tipo        TEXT PRIMARY KEY, -- VENDA, CANCELAMENTO ou RECEBIMENTO
         data        TEXT NOT NULL,
         comprovante TEXT
+      );
+
+      CREATE TABLE IF NOT EXISTS execucao (
+        id     INTEGER PRIMARY KEY AUTOINCREMENT,
+        inicio TEXT NOT NULL,
+        versao TEXT NOT NULL
+      );
+
+      CREATE TABLE IF NOT EXISTS log_integracao (
+        id         INTEGER PRIMARY KEY AUTOINCREMENT,
+        execucao   INTEGER NOT NULL REFERENCES execucao (id),
+        data       TEXT    NOT NULL,
+        metodo     TEXT    NOT NULL,
+        url        TEXT    NOT NULL,
+        requisicao TEXT,             -- JSON (mascarado)
+        status     INTEGER,
+        resposta   TEXT,             -- JSON (mascarado)
+        erro       TEXT,
+        duracao_ms INTEGER
       );
     `);
     console.info(`[BANCO] Aberto: ${arquivo}`);
@@ -234,4 +256,94 @@ export function obterUltimaTransacao(tipo: TipoReimpressao): UltimaTransacao | u
     | { data: string; comprovante: string | null }
     | undefined;
   return linha ? { data: linha.data, comprovante: linha.comprovante ?? undefined } : undefined;
+}
+
+// ---------------------------------------------------------------------------
+// Execuções e log da integração
+// ---------------------------------------------------------------------------
+
+export interface Execucao {
+  id: number;
+  inicio: string;
+}
+
+/** Registra uma nova abertura do app e devolve o número dela (1, 2, 3...). */
+export function iniciarExecucao(): Execucao {
+  return db()
+    .prepare('INSERT INTO execucao (inicio, versao) VALUES (?, ?) RETURNING id, inicio')
+    .get(new Date().toISOString(), app.getVersion()) as unknown as Execucao;
+}
+
+export function salvarLogIntegracao(execucao: Execucao, log: Omit<LogIntegracao, 'id' | 'execucao' | 'inicioExecucao'>): LogIntegracao {
+  const { id } = db()
+    .prepare(
+      `INSERT INTO log_integracao (execucao, data, metodo, url, requisicao, status, resposta, erro, duracao_ms)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+       RETURNING id`,
+    )
+    .get(
+      execucao.id,
+      log.data,
+      log.metodo,
+      log.url,
+      paraJson(log.requisicao),
+      log.status ?? null,
+      paraJson(log.resposta),
+      log.erro ?? null,
+      log.duracaoMs ?? null,
+    ) as { id: number };
+  return { id, execucao: execucao.id, inicioExecucao: execucao.inicio, ...log };
+}
+
+interface LinhaLog {
+  id: number;
+  execucao: number;
+  inicio_execucao: string;
+  data: string;
+  metodo: string;
+  url: string;
+  requisicao: string | null;
+  status: number | null;
+  resposta: string | null;
+  erro: string | null;
+  duracao_ms: number | null;
+}
+
+/** Todos os registros do log da integração, mais recentes primeiro. */
+export function listarLogIntegracao(): LogIntegracao[] {
+  const linhas = db()
+    .prepare(
+      `SELECT l.id, l.execucao, e.inicio AS inicio_execucao, l.data, l.metodo, l.url,
+              l.requisicao, l.status, l.resposta, l.erro, l.duracao_ms
+         FROM log_integracao l
+         JOIN execucao e ON e.id = l.execucao
+        ORDER BY l.id DESC`,
+    )
+    .all() as unknown as LinhaLog[];
+  return linhas.map((l) => ({
+    id: l.id,
+    execucao: l.execucao,
+    inicioExecucao: l.inicio_execucao,
+    data: l.data,
+    metodo: l.metodo,
+    url: l.url,
+    requisicao: deJson(l.requisicao),
+    status: l.status ?? undefined,
+    resposta: deJson(l.resposta),
+    erro: l.erro ?? undefined,
+    duracaoMs: l.duracao_ms ?? undefined,
+  }));
+}
+
+export function limparLogIntegracao(): void {
+  db().prepare('DELETE FROM log_integracao').run();
+  console.info('[BANCO] Log da integração apagado');
+}
+
+function paraJson(valor: unknown): string | null {
+  return valor === undefined ? null : JSON.stringify(valor);
+}
+
+function deJson(texto: string | null): unknown {
+  return texto === null ? undefined : JSON.parse(texto);
 }

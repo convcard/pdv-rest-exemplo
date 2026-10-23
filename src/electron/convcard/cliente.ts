@@ -48,7 +48,7 @@ export class ConvcardErro extends Error {
 
 type Metodo = 'GET' | 'POST' | 'PUT' | 'DELETE';
 
-type NovoLog = Omit<LogIntegracao, 'id'>;
+type NovoLog = Omit<LogIntegracao, 'id' | 'execucao' | 'inicioExecucao'>;
 
 let registrarLog: (log: NovoLog) => void = () => undefined;
 

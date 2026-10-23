@@ -548,6 +548,29 @@ td.vazio {
   font-size: 12px;
 }
 
+.log-separador {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 14px;
+  background: #16304d;
+  color: #93c5fd;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.log-separador span:last-child {
+  color: #9ca3af;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
 .log-itens .vazio {
   padding: 16px;
   color: #6b7280;
